@@ -220,7 +220,10 @@ async function handleCalculate() {
   noticeEl.textContent = "";
 
   const symbol = (selectedSymbol || tickerInput.value.trim()).toUpperCase();
-  const amount = parseFloat(amountInput.value);
+  // Strict numeric parse: unlike parseFloat, Number() rejects trailing junk
+  // ("1000abc" -> NaN) so validateInputs can flag it. Empty/whitespace -> NaN.
+  const rawAmount = amountInput.value.trim();
+  const amount = rawAmount === "" ? NaN : Number(rawAmount);
   const currency = currencySelect.value;
   const requestedDate = dateInput.value;
 
