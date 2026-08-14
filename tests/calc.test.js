@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { computeResult } from "../calc.js";
+import { computeResult, CURRENCIES, formatMoney, formatMultiple, formatPct } from "../calc.js";
 
 test("computeResult: basic gain with 1:1 FX", () => {
   const r = computeResult({
@@ -39,4 +39,17 @@ test("computeResult: MYR conversion via USD pivot", () => {
   });
   assert.equal(Math.round(r.investedUSD), 1000);
   assert.equal(Math.round(r.finalValue), 9000); // 2000 USD * 4.5
+});
+
+test("CURRENCIES includes MYR and the full set", () => {
+  const codes = CURRENCIES.map((c) => c.code);
+  for (const c of ["USD","EUR","GBP","JPY","CAD","AUD","CHF","CNY","INR","HKD","SGD","MYR"]) {
+    assert.ok(codes.includes(c), `${c} missing`);
+  }
+});
+
+test("formatMultiple and formatPct", () => {
+  assert.equal(formatMultiple(5), "5.0×");
+  assert.equal(formatPct(400), "+400.0%");
+  assert.equal(formatPct(-60), "-60.0%");
 });
