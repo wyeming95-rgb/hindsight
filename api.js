@@ -3,11 +3,12 @@ const TD_BASE = "https://api.twelvedata.com";
 export class RateLimitError extends Error {}
 export class NotFoundError extends Error {}
 export class NetworkError extends Error {}
+export class ConfigError extends Error {}
 
 function apiKey() {
   const k = window.TD_API_KEY;
   if (!k || k === "YOUR_TWELVE_DATA_API_KEY") {
-    throw new Error("Missing Twelve Data API key. Copy config.example.js to config.js and add your key.");
+    throw new ConfigError("Missing Twelve Data API key. Copy config.example.js to config.js and add your key.");
   }
   return k;
 }

@@ -19,51 +19,53 @@
       <section class="card" aria-labelledby="form-heading">
         <h2 id="form-heading" class="visually-hidden">Investment details</h2>
 
-        <div class="field">
-          <label for="ticker-input">Ticker symbol</label>
-          <div class="combobox">
-            <input
-              type="text"
-              id="ticker-input"
-              name="ticker"
-              placeholder="e.g. AAPL"
-              autocomplete="off"
-              spellcheck="false"
-              role="combobox"
-              aria-expanded="false"
-              aria-autocomplete="list"
-              aria-controls="suggestions"
-            />
-            <ul id="suggestions" class="suggestions hidden" role="listbox"></ul>
-          </div>
-        </div>
-
-        <div class="field-row">
+        <form id="calculator-form" novalidate>
           <div class="field">
-            <label for="amount-input">Amount</label>
-            <input
-              type="number"
-              id="amount-input"
-              name="amount"
-              placeholder="1000"
-              min="0"
-              step="any"
-              inputmode="decimal"
-            />
+            <label for="ticker-input">Ticker symbol</label>
+            <div class="combobox">
+              <input
+                type="text"
+                id="ticker-input"
+                name="ticker"
+                placeholder="e.g. AAPL"
+                autocomplete="off"
+                spellcheck="false"
+                role="combobox"
+                aria-expanded="false"
+                aria-autocomplete="list"
+                aria-controls="suggestions"
+              />
+              <ul id="suggestions" class="suggestions hidden" role="listbox"></ul>
+            </div>
           </div>
 
-          <div class="field field-currency">
-            <label for="currency-select">Currency</label>
-            <select id="currency-select" name="currency"></select>
+          <div class="field-row">
+            <div class="field">
+              <label for="amount-input">Amount</label>
+              <input
+                type="number"
+                id="amount-input"
+                name="amount"
+                placeholder="1000"
+                min="0"
+                step="any"
+                inputmode="decimal"
+              />
+            </div>
+
+            <div class="field field-currency">
+              <label for="currency-select">Currency</label>
+              <select id="currency-select" name="currency"></select>
+            </div>
           </div>
-        </div>
 
-        <div class="field">
-          <label for="date-input">Investment date</label>
-          <input type="date" id="date-input" name="date" />
-        </div>
+          <div class="field">
+            <label for="date-input">Investment date</label>
+            <input type="date" id="date-input" name="date" />
+          </div>
 
-        <button type="button" id="calculate-btn" class="btn-primary">Calculate</button>
+          <button type="submit" id="calculate-btn" class="btn-primary">Calculate</button>
+        </form>
       </section>
 
       <div id="loading" class="loading hidden" aria-live="polite">

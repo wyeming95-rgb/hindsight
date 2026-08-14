@@ -18,7 +18,9 @@ It is responsive and adapts to light or dark via `prefers-color-scheme`.
 - **Currency conversion** uses historical FX at both the start and end dates,
   pivoting through USD. Twelve Data FX is tried first; if unavailable it falls
   back to [Frankfurter](https://frankfurter.app) (no key required), which also
-  snaps to the nearest prior business day.
+  snaps to the nearest prior business day. Frankfurter's data only goes back to
+  ~1999, so a very old start date in a non-USD currency can fail FX conversion
+  if the Twelve Data forex call is unavailable.
 - If your chosen date predates the earliest available data (e.g. before a
   company's IPO), the app snaps to the earliest available date and tells you.
 

@@ -7,6 +7,7 @@ import {
   RateLimitError,
   NotFoundError,
   NetworkError,
+  ConfigError,
 } from "./api.js";
 import { renderChart } from "./chart.js";
 
@@ -14,12 +15,12 @@ import { renderChart } from "./chart.js";
 // Element references
 // ---------------------------------------------------------------------------
 
+const calculatorForm = document.getElementById("calculator-form");
 const tickerInput = document.getElementById("ticker-input");
 const suggestionsEl = document.getElementById("suggestions");
 const amountInput = document.getElementById("amount-input");
 const currencySelect = document.getElementById("currency-select");
 const dateInput = document.getElementById("date-input");
-const calculateBtn = document.getElementById("calculate-btn");
 const resultEl = document.getElementById("result");
 const headlineEl = document.getElementById("headline");
 const profitEl = document.getElementById("profit");
@@ -65,6 +66,8 @@ initDateMax();
 
 let debounceTimer = null;
 let searchSeq = 0;
+// Show the setup message once for a missing API key; don't spam it on every keystroke.
+let configErrorShown = false;
 
 function hideSuggestions() {
   suggestionsEl.innerHTML = "";
@@ -124,9 +127,16 @@ tickerInput.addEventListener("input", () => {
       // Ignore stale responses from an earlier, slower request.
       if (seq !== searchSeq) return;
       renderSuggestions(results);
-    } catch {
+    } catch (err) {
       if (seq !== searchSeq) return;
       hideSuggestions();
+      // A missing/placeholder API key affects every request, not just this one —
+      // surface it once instead of leaving the user with silent, empty suggestions.
+      if (err instanceof ConfigError && !configErrorShown) {
+        configErrorShown = true;
+        errorEl.textContent = friendlyErrorMessage(err);
+        showEl(errorEl);
+      }
     }
   }, 300);
 });
@@ -182,6 +192,9 @@ function hideEl(el) {
 }
 
 function friendlyErrorMessage(err) {
+  if (err instanceof ConfigError) {
+    return "No API key found. Copy config.example.js to config.js and add your free Twelve Data API key (see the README).";
+  }
   if (err instanceof RateLimitError) {
     return "You've hit the free data limit — try again in a minute.";
   }
@@ -243,19 +256,39 @@ async function handleCalculate() {
       throw new NotFoundError(`No price data for ${symbol}.`);
     }
 
+    const lastPoint = points[points.length - 1];
+
     // Determine effective start date, snapping to earliest available data if needed.
     let effectiveStartDate = requestedDate;
     if (requestedDate < points[0].date) {
       effectiveStartDate = points[0].date;
       noticeEl.textContent = `Earliest available data is ${points[0].date}; using that date.`;
       showEl(noticeEl);
+    } else if (requestedDate > lastPoint.date) {
+      // Requested start is after the last available trading day (e.g. today,
+      // a weekend, or a market holiday) — snap forward to the most recent close
+      // instead of erroring on an otherwise-plausible date.
+      effectiveStartDate = lastPoint.date;
+      noticeEl.textContent =
+        `No trading data on or after that date; using the most recent trading day, ${lastPoint.date}.`;
+      showEl(noticeEl);
     }
 
-    const startPoint = findPriceAtOrAfter(points, effectiveStartDate);
+    let startPoint = findPriceAtOrAfter(points, effectiveStartDate);
+    if (!startPoint && points.length > 0) {
+      // Defensive fallback: any gap not covered by the floor/ceiling snaps above
+      // still resolves to the most recent available trading day rather than
+      // erroring on a date within/near the available range.
+      startPoint = lastPoint;
+      effectiveStartDate = lastPoint.date;
+      noticeEl.textContent =
+        `No trading data on or after that date; using the most recent trading day, ${lastPoint.date}.`;
+      showEl(noticeEl);
+    }
     if (!startPoint) {
       throw new NotFoundError(`No price data on or after ${effectiveStartDate}.`);
     }
-    const endPoint = points[points.length - 1];
+    const endPoint = lastPoint;
 
     const priceAtStart = startPoint.close;
     const priceAtEnd = endPoint.close;
@@ -312,4 +345,10 @@ async function handleCalculate() {
   }
 }
 
-calculateBtn.addEventListener("click", handleCalculate);
+// The Calculate button is a submit button inside <form id="calculator-form">,
+// so both a mouse click and pressing Enter in any of its inputs (ticker,
+// amount, date) reach this single handler via the form's submit event.
+calculatorForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  handleCalculate();
+});

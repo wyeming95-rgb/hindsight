@@ -217,6 +217,15 @@ main {
   gap: var(--space-4);
 }
 
+/* The form is the sole flex child of .card; it re-applies the same
+   flex column + gap so its own children (fields, button) lay out
+   exactly as they did before they were wrapped in a <form>. */
+#calculator-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -260,7 +269,7 @@ select {
   background-position: calc(100% - 1.1rem) center, calc(100% - 0.75rem) center;
   background-size: 6px 6px, 6px 6px;
   background-repeat: no-repeat;
-  color: var(--color-muted);
+  color: var(--color-text);
   padding-right: 2rem;
 }
 
