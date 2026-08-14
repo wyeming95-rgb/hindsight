@@ -8,6 +8,7 @@ import {
   NotFoundError,
   NetworkError,
 } from "./api.js";
+import { renderChart } from "./chart.js";
 
 // ---------------------------------------------------------------------------
 // Element references
@@ -25,7 +26,6 @@ const profitEl = document.getElementById("profit");
 const returnPctEl = document.getElementById("return-pct");
 const multipleEl = document.getElementById("multiple");
 const summaryEl = document.getElementById("summary");
-const chartEl = document.getElementById("chart");
 const noticeEl = document.getElementById("notice");
 const errorEl = document.getElementById("error");
 const loadingEl = document.getElementById("loading");
@@ -168,12 +168,6 @@ function animateCountUp(el, finalValue, currencyCode, duration = 800) {
 
   requestAnimationFrame(frame);
 }
-
-// ---------------------------------------------------------------------------
-// Chart hook — Task 7 will replace this with a real import from chart.js.
-// ---------------------------------------------------------------------------
-
-function renderChart(series, currency) {} // no-op placeholder until Task 7 wires chart.js
 
 // ---------------------------------------------------------------------------
 // Step 3 & 4: calculate handler + error handling
