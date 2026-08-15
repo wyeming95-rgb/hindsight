@@ -624,12 +624,18 @@ function renderVerdict(primarySymbol, resultsBySymbol, currency) {
   const primaryResult = resultsBySymbol.get(primarySymbol);
   const diff = primaryResult.finalValue - spyResult.finalValue;
 
+  // Color the verdict with the same semantic tokens as the profit/return
+  // stats: beating the benchmark reads as a gain, lagging as a loss, a tie
+  // stays neutral. The verdict is the emotional payload of a compare.
+  verdictEl.classList.remove("is-gain", "is-loss");
   if (Math.abs(diff) < 0.005) {
     verdictEl.textContent = "You matched the S&P 500.";
   } else if (diff > 0) {
     verdictEl.textContent = `You beat the S&P 500 by ${formatMoney(diff, currency)}.`;
+    verdictEl.classList.add("is-gain");
   } else {
     verdictEl.textContent = `You lagged the S&P 500 by ${formatMoney(Math.abs(diff), currency)}.`;
+    verdictEl.classList.add("is-loss");
   }
   showEl(verdictEl);
 }

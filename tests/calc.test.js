@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { computeResult, CURRENCIES, formatMoney, formatMultiple, formatPct, rankResults, computeRegret } from "../calc.js";
+import { computeResult, CURRENCIES, formatMoney, formatMultiple, formatPct, rankResults, computeRegret, subtractMonths } from "../calc.js";
 
 test("computeResult: basic gain with 1:1 FX", () => {
   const r = computeResult({
@@ -89,6 +89,19 @@ test("computeRegret returns extra value for an earlier entry", () => {
   assert.equal(r.earlierDate, "2014-08-14");
   assert.equal(r.earlierFinalValue, 6250); // (1000/8)*50
   assert.equal(r.extraValue, 1250);        // 6250 - 5000
+});
+
+test("subtractMonths clamps day-of-month overflow to the target month's last day", () => {
+  // 31 January minus 1 month has no "31 Feb"; must clamp to the last Feb day.
+  assert.equal(subtractMonths("2026-03-31", 1), "2026-02-28");
+  // 2024 is a leap year, so February has 29 days.
+  assert.equal(subtractMonths("2024-03-31", 1), "2024-02-29");
+  // 31 May minus 3 months -> February (clamped), not a rolled-forward March date.
+  assert.equal(subtractMonths("2026-05-31", 3), "2026-02-28");
+  // Crossing a year boundary still clamps correctly (31 Jan - 2 mo = 30 Nov).
+  assert.equal(subtractMonths("2026-01-31", 2), "2025-11-30");
+  // A day that fits every month is untouched.
+  assert.equal(subtractMonths("2026-06-15", 4), "2026-02-15");
 });
 
 test("computeRegret unavailable when earlier date precedes data", () => {

@@ -58,10 +58,16 @@ export function rankResults(entries) {
   return sorted.map((e, i) => ({ ...e, rank: i + 1 }));
 }
 
-function subtractMonths(isoDate, months) {
+export function subtractMonths(isoDate, months) {
   const [y, m, d] = isoDate.split("-").map(Number);
-  const dt = new Date(Date.UTC(y, m - 1, d));
+  // Zero-index the day first so setUTCMonth can't roll the date forward into
+  // the next month when the target month is shorter than the source day.
+  // e.g. "2026-03-31" minus 1 month must land in February, not "2026-03-03".
+  const dt = new Date(Date.UTC(y, m - 1, 1));
   dt.setUTCMonth(dt.getUTCMonth() - months);
+  // Clamp the day to the last valid day of the resulting month.
+  const lastDay = new Date(Date.UTC(dt.getUTCFullYear(), dt.getUTCMonth() + 1, 0)).getUTCDate();
+  dt.setUTCDate(Math.min(d, lastDay));
   return dt.toISOString().slice(0, 10);
 }
 

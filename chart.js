@@ -21,7 +21,10 @@ const PAD_BOTTOM = 24;
 // any further tickers draw from LINE_COLORS in order.
 export const PRIMARY_COLOR = "#34d399";
 export const BENCHMARK_COLOR = "#fbbf24";
-export const LINE_COLORS = ["#60a5fa", "#c084fc"]; // for extra tickers, in order
+// For extra tickers, in order. Three entries so that with the benchmark off a
+// user can draw primary + 3 compare lines (4 total) and every line stays a
+// distinct, theme-legible hue: blue, violet, rose (all readable on light/dark).
+export const LINE_COLORS = ["#60a5fa", "#c084fc", "#f472b6"];
 
 function prefersReducedMotion() {
   return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;

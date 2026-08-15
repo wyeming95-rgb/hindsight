@@ -801,14 +801,20 @@ button:focus-visible {
 .compare-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
+  gap: var(--space-2);
   padding: 0.5rem 0.75rem;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   font-size: 0.875rem;
   font-weight: 600;
+}
+
+/* Let the ticker input fill the row so the remove control sits directly
+   beside it instead of floating at the far edge with a wide dead gap. */
+.compare-row .combobox {
+  flex: 1;
+  min-width: 0;
 }
 
 .compare-row-remove {
@@ -841,6 +847,17 @@ button:focus-visible {
   font-size: 1.0625rem;
   font-weight: 600;
   color: var(--color-text);
+}
+
+/* Beating / lagging the benchmark carries the same semantic color as the
+   profit and return stats. Scoped so it wins over the neutral default
+   despite `.is-gain`/`.is-loss` appearing earlier in the source. */
+.verdict.is-gain {
+  color: var(--color-gain);
+}
+
+.verdict.is-loss {
+  color: var(--color-loss);
 }
 
 .regret {
