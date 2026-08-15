@@ -3,6 +3,12 @@
    ========================================================================== */
 
 :root {
+  /* Tells the browser to render native controls (date picker, select
+     popups, scrollbars, form fields) in the light scheme by default. The
+     dark variants below flip this so those controls match the theme too —
+     an Apple-grade detail: the OS chrome should never fight the palette. */
+  color-scheme: light;
+
   /* Color tokens (light) */
   --color-bg: #f7f5f1;
   --color-surface: #ffffff;
@@ -19,6 +25,13 @@
   --color-danger-bg: #fbebe8;
   --color-danger-text: #7a2318;
   --color-danger-border: #e8c3bd;
+
+  /* Translucent material for floating chrome (theme toggle, dropdown) —
+     a light layer over content, blurred so it reads as real glass. Solid
+     fallback comes first for engines without backdrop-filter and for the
+     prefers-reduced-transparency path below. */
+  --color-glass: rgba(255, 255, 255, 0.72);
+  --color-glass-border: rgba(255, 255, 255, 0.5);
 
   /* Typography — self-contained system stacks (no web fonts / CDNs).
      A serif display face gives the editorial-finance voice; a tabular
@@ -53,8 +66,16 @@
   --container-max: 640px;
 }
 
+/* Dark palette, defined once and applied in two situations:
+   (1) the system asks for dark AND the user hasn't forced light, and
+   (2) the user explicitly forced dark via the toggle.
+   Both selectors carry the same declarations — CSS has no way to share a
+   token block across a media query and a bare selector, so it is written
+   twice on purpose. Keep the two blocks in sync. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
     --color-bg: #14161a;
     --color-surface: #1c1f24;
     --color-text: #f0efec;
@@ -71,9 +92,66 @@
     --color-danger-text: #f0a99e;
     --color-danger-border: rgba(229, 105, 91, 0.3);
 
+    --color-glass: rgba(28, 31, 36, 0.72);
+    --color-glass-border: rgba(255, 255, 255, 0.08);
+
     --color-focus-ring: rgba(79, 184, 148, 0.32);
 
     --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 40px -20px rgba(0, 0, 0, 0.6);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg: #14161a;
+  --color-surface: #1c1f24;
+  --color-text: #f0efec;
+  --color-muted: #93989f;
+  --color-border: #2c3038;
+  --color-accent: #4fb894;
+  --color-accent-hover: #63c9a6;
+  --color-accent-contrast: #0b1210;
+  --color-gain: #48c78e;
+  --color-gain-bg: rgba(72, 199, 142, 0.12);
+  --color-loss: #e5695b;
+  --color-loss-bg: rgba(229, 105, 91, 0.12);
+  --color-danger-bg: rgba(229, 105, 91, 0.1);
+  --color-danger-text: #f0a99e;
+  --color-danger-border: rgba(229, 105, 91, 0.3);
+
+  --color-glass: rgba(28, 31, 36, 0.72);
+  --color-glass-border: rgba(255, 255, 255, 0.08);
+
+  --color-focus-ring: rgba(79, 184, 148, 0.32);
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 40px -20px rgba(0, 0, 0, 0.6);
+}
+
+/* Forced light must win even when the OS is in dark mode: color-scheme is
+   re-stated so native controls stay light too. Token values already come
+   from the base :root, so only the scheme needs asserting here. */
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+/* Theme-switch cross-fade. JS adds .theme-transition to <html> for the
+   duration of a toggle, so only the deliberate light<->dark change eases;
+   ordinary interactions keep their own (faster) transitions. */
+:root.theme-transition,
+:root.theme-transition *,
+:root.theme-transition *::before,
+:root.theme-transition *::after {
+  transition: background-color 320ms ease, border-color 320ms ease,
+    color 320ms ease, fill 320ms ease, box-shadow 320ms ease !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root.theme-transition,
+  :root.theme-transition *,
+  :root.theme-transition *::before,
+  :root.theme-transition *::after {
+    transition: none !important;
   }
 }
 
@@ -141,6 +219,73 @@ ul {
 
 .hidden {
   display: none !important;
+}
+
+/* ==========================================================================
+   Theme toggle — floating glass control (system / light / dark)
+   ========================================================================== */
+
+.theme-toggle {
+  position: fixed;
+  top: max(1rem, env(safe-area-inset-top));
+  right: max(1rem, env(safe-area-inset-right));
+  z-index: 90;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--color-text);
+  /* Solid fallback first; the translucent material + blur layer on top for
+     engines that support backdrop-filter (progressive enhancement). */
+  background: var(--color-surface);
+  background: var(--color-glass);
+  border: 1px solid var(--color-border);
+  border-color: var(--color-glass-border);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(16px) saturate(180%);
+  box-shadow: 0 1px 2px rgba(20, 20, 20, 0.06), 0 8px 24px -12px rgba(20, 20, 20, 0.28);
+  /* Springy settle on press-release; cheap compositor-only properties. */
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1), color 140ms ease;
+}
+
+.theme-toggle:hover {
+  color: var(--color-accent);
+  box-shadow: 0 1px 2px rgba(20, 20, 20, 0.08), 0 12px 30px -12px rgba(20, 20, 20, 0.38);
+}
+
+/* Feedback on the press itself (§Response), not on release. */
+.theme-toggle:active {
+  transform: scale(0.92);
+}
+
+.theme-toggle svg {
+  display: block;
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+/* The active icon is chosen purely by the html[data-theme] state, so it is
+   correct on first paint (the inline head script sets data-theme before the
+   body renders) with no JavaScript and no flash. */
+.theme-toggle .icon {
+  display: none;
+}
+
+:root:not([data-theme]) .theme-toggle .icon-system {
+  display: block;
+}
+
+:root[data-theme="light"] .theme-toggle .icon-light {
+  display: block;
+}
+
+:root[data-theme="dark"] .theme-toggle .icon-dark {
+  display: block;
 }
 
 /* ==========================================================================
@@ -332,7 +477,12 @@ button:focus-visible {
   z-index: 10;
   max-height: 15rem;
   overflow-y: auto;
+  /* Solid fallback, then a translucent-glass layer so the dropdown reads as
+     a floating material above the form (§Materials). */
   background: var(--color-surface);
+  background: var(--color-glass);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
@@ -1033,5 +1183,55 @@ button:focus-visible {
   .ranked-table th,
   .ranked-table td {
     padding: 0.5rem 0.5rem;
+  }
+}
+
+/* ==========================================================================
+   Accessibility — transparency & contrast preferences
+   ========================================================================== */
+
+/* When the user asks for reduced transparency, drop the blur and make the
+   glass surfaces fully solid so text never sits over a busy backdrop. */
+@media (prefers-reduced-transparency: reduce) {
+  .theme-toggle,
+  .suggestions {
+    background: var(--color-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .theme-toggle {
+    border-color: var(--color-border);
+  }
+}
+
+/* Higher-contrast preference: near-solid surfaces with defined, contrasting
+   borders, and a stronger focus ring so structure stays legible. */
+@media (prefers-contrast: more) {
+  .theme-toggle,
+  .suggestions {
+    background: var(--color-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .card,
+  .result,
+  .compare-block,
+  .compare-row,
+  .notice,
+  .error,
+  .theme-toggle,
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  select {
+    border-color: var(--color-text);
+  }
+
+  input:focus-visible,
+  select:focus-visible,
+  button:focus-visible {
+    box-shadow: 0 0 0 3px var(--color-accent);
   }
 }

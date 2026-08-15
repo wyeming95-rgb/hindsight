@@ -85,6 +85,66 @@ initCurrencySelect();
 initDateMax();
 
 // ---------------------------------------------------------------------------
+// Theme toggle: cycle System -> Light -> Dark, persisted to localStorage
+// ---------------------------------------------------------------------------
+//
+// The pre-paint inline script in index.html has already applied any saved
+// choice to <html data-theme>, and CSS shows the matching icon; this only
+// handles cycling on click, persistence, an eased cross-fade, and the
+// accessible label. "System" is represented by the absence of data-theme.
+
+const themeToggle = document.getElementById("theme-toggle");
+const THEME_ORDER = ["system", "light", "dark"];
+const THEME_LABELS = { system: "System", light: "Light", dark: "Dark" };
+
+function currentTheme() {
+  const attr = document.documentElement.getAttribute("data-theme");
+  return attr === "light" || attr === "dark" ? attr : "system";
+}
+
+function nextTheme(mode) {
+  return THEME_ORDER[(THEME_ORDER.indexOf(mode) + 1) % THEME_ORDER.length];
+}
+
+function updateThemeToggleLabel(mode) {
+  const upcoming = nextTheme(mode);
+  themeToggle.setAttribute(
+    "aria-label",
+    `Theme: ${THEME_LABELS[mode]}. Activate to switch to ${THEME_LABELS[upcoming]}.`,
+  );
+  themeToggle.setAttribute("title", `Theme: ${THEME_LABELS[mode]}`);
+}
+
+function applyTheme(mode) {
+  const root = document.documentElement;
+
+  // Ease only this deliberate light<->dark change; strip the class after the
+  // transition so ordinary interactions keep their own faster timings.
+  if (!prefersReducedMotion()) {
+    root.classList.add("theme-transition");
+    window.setTimeout(() => root.classList.remove("theme-transition"), 340);
+  }
+
+  if (mode === "system") root.removeAttribute("data-theme");
+  else root.setAttribute("data-theme", mode);
+
+  try {
+    if (mode === "system") localStorage.removeItem("theme");
+    else localStorage.setItem("theme", mode);
+  } catch {
+    /* storage unavailable (private mode / disabled) — theme still applies for the session */
+  }
+
+  updateThemeToggleLabel(mode);
+}
+
+themeToggle.addEventListener("click", () => {
+  applyTheme(nextTheme(currentTheme()));
+});
+
+updateThemeToggleLabel(currentTheme());
+
+// ---------------------------------------------------------------------------
 // Step 2: ticker autocomplete (primary input)
 // ---------------------------------------------------------------------------
 
