@@ -10,6 +10,7 @@ import {
   ConfigError,
 } from "./api.js";
 import { renderChart, PRIMARY_COLOR, BENCHMARK_COLOR, LINE_COLORS } from "./chart.js";
+import { decodeState, buildShareUrl, copyLink, renderCardPng } from "./share.js";
 
 // ---------------------------------------------------------------------------
 // Element references
@@ -39,6 +40,11 @@ const verdictEl = document.getElementById("verdict");
 const regretEl = document.getElementById("regret");
 const presetsEl = document.getElementById("presets");
 
+const shareBarEl = document.getElementById("share-bar");
+const copyLinkBtn = document.getElementById("copy-link-btn");
+const downloadPngBtn = document.getElementById("download-png-btn");
+const toastEl = document.getElementById("toast");
+
 // Maximum number of lines on the chart: 1 primary + up to 3 more
 // (benchmark and/or compare tickers), matching chart.js's exported palette
 // (PRIMARY_COLOR + BENCHMARK_COLOR + LINE_COLORS).
@@ -46,6 +52,11 @@ const MAX_LINES = 4;
 
 // Currently selected ticker symbol (from a suggestion click, or typed value).
 let selectedSymbol = "";
+
+// Snapshot of the primary result, captured after each successful calculation,
+// used by the "Download image" button (Task 8). Null until a calc succeeds.
+let lastCardData = null;
+let lastPngFilename = "what-if.png";
 
 // ---------------------------------------------------------------------------
 // Step 1: currency dropdown + date max
@@ -418,6 +429,31 @@ function animateCountUp(el, finalValue, currencyCode, duration = 800) {
 }
 
 // ---------------------------------------------------------------------------
+// Task 8: toast helper
+// ---------------------------------------------------------------------------
+
+let toastTimer = null;
+
+// Reveals #toast with `message`, then hides it again after ~2.5s via a JS
+// timer (not an `animationend` listener) so it works the same whether or
+// not `prefers-reduced-motion` disables the CSS fade in styles.css.
+function showToast(message) {
+  toastEl.textContent = message;
+
+  // If the toast is already visible (rapid double-click), briefly re-hide
+  // it and force a reflow so removing "hidden" again restarts the CSS fade.
+  toastEl.classList.add("hidden");
+  void toastEl.offsetWidth;
+  toastEl.classList.remove("hidden");
+
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toastEl.classList.add("hidden");
+    toastTimer = null;
+  }, 2500);
+}
+
+// ---------------------------------------------------------------------------
 // Step 3 & 4: calculate handler + error handling
 // ---------------------------------------------------------------------------
 
@@ -604,11 +640,13 @@ async function handleCalculate() {
   hideEl(noticeEl);
   hideEl(verdictEl);
   hideEl(regretEl);
+  hideEl(shareBarEl);
   errorEl.textContent = "";
   noticeEl.innerHTML = "";
   verdictEl.textContent = "";
   regretEl.textContent = "";
   rankedResultsEl.innerHTML = "";
+  lastCardData = null;
 
   const symbol = getPrimarySymbol();
   // Strict numeric parse: unlike parseFloat, Number() rejects trailing junk
@@ -765,6 +803,28 @@ async function handleCalculate() {
     showEl(regretEl);
 
     showEl(resultEl);
+
+    // ---- Task 8: share wiring ----
+    // Snapshot for the "Download image" button: the primary stock's own
+    // aligned value series doubles as the PNG card's sparkline.
+    const primarySeries = seriesList.find((s) => s.label === symbol);
+    lastCardData = {
+      headline: formatMoney(primaryResult.finalValue, currency),
+      subtitle: `${formatMoney(amount, currency)} in ${symbol} on ${startDate}`,
+      stats: [
+        { label: "Return", value: formatPct(primaryResult.returnPct) },
+        { label: "Multiple", value: formatMultiple(primaryResult.multiple) },
+        { label: "Profit", value: formatMoney(primaryResult.profit, currency) },
+      ],
+      sparkline: primarySeries ? primarySeries.points : [],
+      footer: "Not financial advice · historical/educational",
+    };
+    lastPngFilename = `what-if-${symbol}.png`;
+
+    // Reflect the current view in the address bar so it can be copied/shared
+    // directly, without adding a history entry per calculation.
+    history.replaceState(null, "", buildShareUrl(getCompareState()));
+    showEl(shareBarEl);
   } catch (err) {
     errorEl.textContent = friendlyErrorMessage(err);
     showEl(errorEl);
@@ -814,3 +874,70 @@ presetsEl.addEventListener("click", (e) => {
 
   handleCalculate();
 });
+
+// ---------------------------------------------------------------------------
+// Task 8: share bar buttons
+// ---------------------------------------------------------------------------
+
+copyLinkBtn.addEventListener("click", async () => {
+  const url = buildShareUrl(getCompareState());
+  const ok = await copyLink(url);
+  showToast(ok ? "Link copied!" : "Couldn't copy — select the address bar to copy.");
+});
+
+downloadPngBtn.addEventListener("click", async () => {
+  if (!lastCardData) {
+    showToast("Run a calculation first.");
+    return;
+  }
+  const ok = await renderCardPng(lastCardData, lastPngFilename);
+  if (!ok) {
+    showToast("Couldn't generate the image.");
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Task 8: auto-run from a shared URL on load
+// ---------------------------------------------------------------------------
+
+// Populates the form from a decoded share-URL state. Doesn't touch fields
+// the state doesn't specify, so e.g. a missing/invalid amount leaves the
+// input at its normal default rather than crashing or writing "null".
+function applyStateToForm(state) {
+  tickerInput.value = state.stock;
+  selectedSymbol = state.stock;
+
+  if (Number.isFinite(state.amount)) {
+    amountInput.value = String(state.amount);
+  }
+
+  if (state.currency && CURRENCIES.some((c) => c.code === state.currency)) {
+    currencySelect.value = state.currency;
+  }
+
+  if (state.date) {
+    dateInput.value = state.date;
+  }
+
+  benchmarkToggle.checked = !!state.benchmark;
+  updateCompareCapUI();
+
+  for (const sym of state.compare) {
+    if (addCompareBtn.disabled) break; // respect the MAX_LINES cap
+    const row = createCompareRow();
+    compareListEl.appendChild(row);
+    const rowInput = row.querySelector(".compare-row-input");
+    rowInput.value = sym;
+    rowInput.dataset.selectedSymbol = sym;
+    updateCompareCapUI();
+  }
+}
+
+function initFromUrl() {
+  const state = decodeState(location.search);
+  if (!state.stock) return;
+  applyStateToForm(state);
+  handleCalculate();
+}
+
+initFromUrl();
