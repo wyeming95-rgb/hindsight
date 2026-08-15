@@ -1,4 +1,4 @@
-import { computeResult, rankResults, CURRENCIES, formatMoney, formatMultiple, formatPct } from "./calc.js";
+import { computeResult, computeRegret, rankResults, CURRENCIES, formatMoney, formatMultiple, formatPct } from "./calc.js";
 import {
   searchSymbols,
   fetchAllSeries,
@@ -36,6 +36,8 @@ const compareListEl = document.getElementById("compare-list");
 const addCompareBtn = document.getElementById("add-compare-btn");
 const rankedResultsEl = document.getElementById("ranked-results");
 const verdictEl = document.getElementById("verdict");
+const regretEl = document.getElementById("regret");
+const presetsEl = document.getElementById("presets");
 
 // Maximum number of lines on the chart: 1 primary + up to 3 more
 // (benchmark and/or compare tickers), matching chart.js's exported palette
@@ -601,9 +603,11 @@ async function handleCalculate() {
   hideEl(errorEl);
   hideEl(noticeEl);
   hideEl(verdictEl);
+  hideEl(regretEl);
   errorEl.textContent = "";
   noticeEl.innerHTML = "";
   verdictEl.textContent = "";
+  regretEl.textContent = "";
   rankedResultsEl.innerHTML = "";
 
   const symbol = getPrimarySymbol();
@@ -736,6 +740,30 @@ async function handleCalculate() {
     // ---- notices: primary date-snap note (if any) + per-ticker skip notes ----
     setNotices([primarySnap.notice, ...compareErrors]);
 
+    // ---- regret meter: "what if you'd invested a year earlier?" (primary stock only) ----
+    const regret = computeRegret(primaryPoints, {
+      startDate,
+      monthsEarlier: 12,
+      amount,
+      fxToUSDAtStart,
+      fxFromUSDAtEnd,
+      priceAtEnd,
+      actualFinalValue: primaryResult.finalValue,
+    });
+
+    if (!regret.available) {
+      regretEl.textContent = "A year earlier is before this stock's price history.";
+    } else if (regret.extraValue > 0) {
+      regretEl.textContent =
+        `If you'd invested a year earlier (${regret.earlierDate}), you'd have ` +
+        `${formatMoney(regret.extraValue, currency)} more.`;
+    } else {
+      regretEl.textContent =
+        `Investing a year earlier would've left you ${formatMoney(-regret.extraValue, currency)} ` +
+        `worse off — your timing helped.`;
+    }
+    showEl(regretEl);
+
     showEl(resultEl);
   } catch (err) {
     errorEl.textContent = friendlyErrorMessage(err);
@@ -750,5 +778,39 @@ async function handleCalculate() {
 // amount, date) reach this single handler via the form's submit event.
 calculatorForm.addEventListener("submit", (e) => {
   e.preventDefault();
+  handleCalculate();
+});
+
+// ---------------------------------------------------------------------------
+// Step 2: preset scenario chips
+// ---------------------------------------------------------------------------
+
+// Event-delegated so it works regardless of how many chips are in the DOM.
+presetsEl.addEventListener("click", (e) => {
+  const chip = e.target.closest(".preset-chip");
+  if (!chip) return;
+
+  const stock = chip.dataset.stock;
+  const years = Number(chip.dataset.years);
+  if (!stock || !Number.isFinite(years)) return;
+
+  tickerInput.value = stock;
+  selectedSymbol = stock;
+  hideSuggestions();
+
+  // Same local-date formatting as initDateMax, just offset by `years`.
+  const today = new Date();
+  const target = new Date(today.getFullYear() - years, today.getMonth(), today.getDate());
+  const yyyy = target.getFullYear();
+  const mm = String(target.getMonth() + 1).padStart(2, "0");
+  const dd = String(target.getDate()).padStart(2, "0");
+  let iso = `${yyyy}-${mm}-${dd}`;
+  if (dateInput.max && iso > dateInput.max) iso = dateInput.max;
+  dateInput.value = iso;
+
+  if (!amountInput.value.trim()) {
+    amountInput.value = "1000";
+  }
+
   handleCalculate();
 });
