@@ -86,3 +86,25 @@ async function usdTo(currency, date) {
   if (!rate) throw new NotFoundError(`No FX rate for ${currency} on ${date}.`);
   return rate;
 }
+
+export async function mapSequential(items, asyncFn, spacingMs = 0) {
+  const results = [];
+  for (let i = 0; i < items.length; i++) {
+    results.push(await asyncFn(items[i], i));
+    if (spacingMs > 0 && i < items.length - 1) {
+      await new Promise((r) => setTimeout(r, spacingMs));
+    }
+  }
+  return results;
+}
+
+export async function fetchAllSeries(symbols, spacingMs = 250) {
+  return mapSequential(symbols, async (symbol) => {
+    try {
+      const { points } = await fetchPriceSeries(symbol);
+      return { symbol, points };
+    } catch (error) {
+      return { symbol, error };
+    }
+  }, spacingMs);
+}
