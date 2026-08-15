@@ -16,6 +16,13 @@ const PAD_RIGHT = 8;
 const PAD_TOP = 16;
 const PAD_BOTTOM = 24;
 
+// Stable color assignments for callers. The primary series (the user's own
+// ticker) gets PRIMARY_COLOR; a benchmark comparison gets BENCHMARK_COLOR;
+// any further tickers draw from LINE_COLORS in order.
+export const PRIMARY_COLOR = "#34d399";
+export const BENCHMARK_COLOR = "#fbbf24";
+export const LINE_COLORS = ["#60a5fa", "#c084fc"]; // for extra tickers, in order
+
 function prefersReducedMotion() {
   return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
@@ -27,33 +34,111 @@ function formatDateLabel(dateStr) {
 }
 
 /**
- * Render a responsive, animated line chart of `series` into the `#chart`
- * container. Safe to call repeatedly (clears prior content) and safe to call
- * with an empty or single-point series.
+ * Fill (or replace) a tooltip element's content. A single row renders as the
+ * original plain-text "date — value" string; multiple rows render as a date
+ * heading plus one swatch/label/value row per series.
  *
- * @param {Array<{date: string, value: number}>} series
+ * @param {HTMLElement} tooltip
+ * @param {string} date
+ * @param {Array<{color: string, label: string, value: number}>} rows
  * @param {string} currencyCode
  */
-export function renderChart(series, currencyCode) {
+function setTooltipContent(tooltip, date, rows, currencyCode) {
+  tooltip.innerHTML = "";
+
+  if (rows.length <= 1) {
+    const value = rows.length === 1 ? rows[0].value : NaN;
+    tooltip.textContent = `${formatDateLabel(date)} — ${formatMoney(value, currencyCode)}`;
+    return;
+  }
+
+  const dateEl = document.createElement("div");
+  dateEl.className = "chart-tooltip-date";
+  dateEl.textContent = formatDateLabel(date);
+  tooltip.appendChild(dateEl);
+
+  for (const row of rows) {
+    const rowEl = document.createElement("div");
+    rowEl.className = "chart-tooltip-row";
+
+    const swatch = document.createElement("span");
+    swatch.className = "chart-tooltip-swatch";
+    swatch.style.background = row.color;
+
+    const label = document.createElement("span");
+    label.className = "chart-tooltip-label";
+    label.textContent = row.label;
+
+    const value = document.createElement("span");
+    value.className = "chart-tooltip-value";
+    value.textContent = formatMoney(row.value, currencyCode);
+
+    rowEl.appendChild(swatch);
+    rowEl.appendChild(label);
+    rowEl.appendChild(value);
+    tooltip.appendChild(rowEl);
+  }
+}
+
+function buildLegend(seriesList) {
+  const legend = document.createElement("div");
+  legend.className = "chart-legend";
+
+  for (const s of seriesList) {
+    const item = document.createElement("div");
+    item.className = "chart-legend-item";
+
+    const swatch = document.createElement("span");
+    swatch.className = "chart-legend-swatch";
+    swatch.style.background = s.color;
+
+    const label = document.createElement("span");
+    label.className = "chart-legend-label";
+    label.textContent = s.label;
+
+    item.appendChild(swatch);
+    item.appendChild(label);
+    legend.appendChild(item);
+  }
+
+  return legend;
+}
+
+/**
+ * Render a responsive, animated multi-line chart into the `#chart`
+ * container. Safe to call repeatedly (clears prior content) and safe to call
+ * with an empty list or series whose primary has a single point.
+ *
+ * @param {Array<{label: string, color: string, points: Array<{date: string, value: number}>}>} seriesList
+ * @param {string} currencyCode
+ */
+export function renderChart(seriesList, currencyCode) {
   const container = document.getElementById("chart");
   if (!container) return;
 
   container.innerHTML = "";
   container.style.position = "relative";
 
-  if (!series || series.length === 0) {
+  if (!seriesList || seriesList.length === 0) {
     return;
   }
 
-  if (series.length === 1) {
-    renderSinglePoint(container, series[0], currencyCode);
+  // Drop series with no data — nothing to plot and nothing useful to show in
+  // the legend for them.
+  const validSeries = seriesList.filter((s) => s && s.points && s.points.length > 0);
+  if (validSeries.length === 0) {
     return;
   }
 
-  renderLineChart(container, series, currencyCode);
+  if (validSeries[0].points.length === 1) {
+    renderSinglePoint(container, validSeries, currencyCode);
+    return;
+  }
+
+  renderLineChart(container, validSeries, currencyCode);
 }
 
-function renderSinglePoint(container, point, currencyCode) {
+function renderSinglePoint(container, seriesList, currencyCode) {
   const svg = document.createElementNS(SVG_NS, "svg");
   svg.setAttribute("viewBox", `0 0 ${VB_WIDTH} ${VB_HEIGHT}`);
   svg.setAttribute("preserveAspectRatio", "none");
@@ -70,28 +155,45 @@ function renderSinglePoint(container, point, currencyCode) {
 
   const cx = VB_WIDTH / 2;
   const cy = VB_HEIGHT / 2;
-  const dot = document.createElementNS(SVG_NS, "circle");
-  dot.setAttribute("cx", String(cx));
-  dot.setAttribute("cy", String(cy));
-  dot.setAttribute("r", "4");
-  dot.setAttribute("class", "chart-dot");
-  svg.appendChild(dot);
+  for (const s of seriesList) {
+    const dot = document.createElementNS(SVG_NS, "circle");
+    dot.setAttribute("cx", String(cx));
+    dot.setAttribute("cy", String(cy));
+    dot.setAttribute("r", "4");
+    dot.setAttribute("class", "chart-dot");
+    dot.style.fill = s.color;
+    svg.appendChild(dot);
+  }
 
   container.appendChild(svg);
 
+  if (seriesList.length > 1) {
+    container.appendChild(buildLegend(seriesList));
+  }
+
+  const primaryPoint = seriesList[0].points[0];
+  const rows = seriesList
+    .filter((s) => s.points[0])
+    .map((s) => ({ color: s.color, label: s.label, value: s.points[0].value }));
+
   const tooltip = document.createElement("div");
   tooltip.className = "chart-tooltip";
-  tooltip.textContent = `${formatDateLabel(point.date)} — ${formatMoney(point.value, currencyCode)}`;
+  setTooltipContent(tooltip, primaryPoint.date, rows, currencyCode);
   tooltip.style.left = "50%";
   tooltip.style.top = "50%";
   tooltip.style.transform = "translate(-50%, -140%)";
   container.appendChild(tooltip);
 }
 
-function renderLineChart(container, series, currencyCode) {
-  const values = series.map((p) => p.value);
-  let min = Math.min(...values);
-  let max = Math.max(...values);
+function renderLineChart(container, seriesList, currencyCode) {
+  // The primary (first) series defines the X domain — index position and
+  // dates. Other series are plotted along that same domain, up to however
+  // many points they each have.
+  const primaryLength = seriesList[0].points.length;
+
+  const allValues = seriesList.flatMap((s) => s.points.map((p) => p.value));
+  let min = Math.min(...allValues);
+  let max = Math.max(...allValues);
   if (min === max) {
     // Degenerate flat series — pad the range so the line isn't zero-height.
     min -= 1;
@@ -101,15 +203,18 @@ function renderLineChart(container, series, currencyCode) {
   const innerWidth = VB_WIDTH - PAD_LEFT - PAD_RIGHT;
   const innerHeight = VB_HEIGHT - PAD_TOP - PAD_BOTTOM;
 
-  const xForIndex = (i) => PAD_LEFT + (i / (series.length - 1)) * innerWidth;
+  const xForIndex = (i) => PAD_LEFT + (i / (primaryLength - 1)) * innerWidth;
   const yForValue = (v) => PAD_TOP + (1 - (v - min) / (max - min)) * innerHeight;
 
-  const points = series.map((p, i) => ({
-    x: xForIndex(i),
-    y: yForValue(p.value),
-    date: p.date,
-    value: p.value,
-  }));
+  const seriesPoints = seriesList.map((s) => {
+    const count = Math.min(s.points.length, primaryLength);
+    return s.points.slice(0, count).map((p, i) => ({
+      x: xForIndex(i),
+      y: yForValue(p.value),
+      date: p.date,
+      value: p.value,
+    }));
+  });
 
   const svg = document.createElementNS(SVG_NS, "svg");
   svg.setAttribute("viewBox", `0 0 ${VB_WIDTH} ${VB_HEIGHT}`);
@@ -126,14 +231,19 @@ function renderLineChart(container, series, currencyCode) {
   baseline.setAttribute("class", "chart-baseline");
   svg.appendChild(baseline);
 
-  // Value line.
-  const d = points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(" ");
-  const path = document.createElementNS(SVG_NS, "path");
-  path.setAttribute("d", d);
-  path.setAttribute("class", "chart-line");
-  svg.appendChild(path);
+  // One value line per series, each stroked in its own color.
+  const paths = seriesList.map((s, si) => {
+    const pts = seriesPoints[si];
+    const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(" ");
+    const path = document.createElementNS(SVG_NS, "path");
+    path.setAttribute("d", d);
+    path.setAttribute("class", "chart-line");
+    path.style.stroke = s.color;
+    svg.appendChild(path);
+    return path;
+  });
 
-  // Hover guide + marker (hidden until pointer interaction).
+  // Hover guide (hidden until pointer interaction).
   const guide = document.createElementNS(SVG_NS, "line");
   guide.setAttribute("y1", String(PAD_TOP));
   guide.setAttribute("y2", String(VB_HEIGHT - PAD_BOTTOM));
@@ -141,11 +251,16 @@ function renderLineChart(container, series, currencyCode) {
   guide.setAttribute("opacity", "0");
   svg.appendChild(guide);
 
-  const dot = document.createElementNS(SVG_NS, "circle");
-  dot.setAttribute("r", "4");
-  dot.setAttribute("class", "chart-dot");
-  dot.setAttribute("opacity", "0");
-  svg.appendChild(dot);
+  // One hover marker per series.
+  const dots = seriesList.map((s) => {
+    const dot = document.createElementNS(SVG_NS, "circle");
+    dot.setAttribute("r", "4");
+    dot.setAttribute("class", "chart-dot");
+    dot.setAttribute("opacity", "0");
+    dot.style.fill = s.color;
+    svg.appendChild(dot);
+    return dot;
+  });
 
   // Transparent overlay captures pointer/touch input across the full chart.
   const overlay = document.createElementNS(SVG_NS, "rect");
@@ -158,12 +273,18 @@ function renderLineChart(container, series, currencyCode) {
 
   container.appendChild(svg);
 
+  if (seriesList.length > 1) {
+    container.appendChild(buildLegend(seriesList));
+  }
+
   const tooltip = document.createElement("div");
   tooltip.className = "chart-tooltip";
   tooltip.hidden = true;
   container.appendChild(tooltip);
 
-  animateDrawIn(path);
+  for (const path of paths) {
+    animateDrawIn(path);
+  }
 
   function nearestIndexForClientX(clientX) {
     const rect = svg.getBoundingClientRect();
@@ -171,8 +292,8 @@ function renderLineChart(container, series, currencyCode) {
     const relX = ((clientX - rect.left) / rect.width) * VB_WIDTH;
     let nearest = 0;
     let nearestDist = Infinity;
-    for (let i = 0; i < points.length; i++) {
-      const dist = Math.abs(points[i].x - relX);
+    for (let i = 0; i < primaryLength; i++) {
+      const dist = Math.abs(xForIndex(i) - relX);
       if (dist < nearestDist) {
         nearestDist = dist;
         nearest = i;
@@ -182,22 +303,31 @@ function renderLineChart(container, series, currencyCode) {
   }
 
   function showAt(index) {
-    const p = points[index];
+    const primaryPoint = seriesPoints[0][index];
 
-    guide.setAttribute("x1", String(p.x));
-    guide.setAttribute("x2", String(p.x));
+    guide.setAttribute("x1", String(primaryPoint.x));
+    guide.setAttribute("x2", String(primaryPoint.x));
     guide.setAttribute("opacity", "1");
 
-    dot.setAttribute("cx", String(p.x));
-    dot.setAttribute("cy", String(p.y));
-    dot.setAttribute("opacity", "1");
+    const rows = [];
+    seriesList.forEach((s, si) => {
+      const pts = seriesPoints[si];
+      // Clamp to the last available point for a series shorter than primary,
+      // rather than skipping it (avoids the tooltip row disappearing/jumping).
+      const p = pts[index] ?? pts[pts.length - 1];
+      if (!p) return;
+      dots[si].setAttribute("cx", String(p.x));
+      dots[si].setAttribute("cy", String(p.y));
+      dots[si].setAttribute("opacity", "1");
+      rows.push({ color: s.color, label: s.label, value: p.value });
+    });
 
     tooltip.hidden = false;
-    tooltip.textContent = `${formatDateLabel(p.date)} — ${formatMoney(p.value, currencyCode)}`;
+    setTooltipContent(tooltip, primaryPoint.date, rows, currencyCode);
 
     const rect = svg.getBoundingClientRect();
-    const pxX = (p.x / VB_WIDTH) * rect.width;
-    const pxY = (p.y / VB_HEIGHT) * rect.height;
+    const pxX = (primaryPoint.x / VB_WIDTH) * rect.width;
+    const pxY = (primaryPoint.y / VB_HEIGHT) * rect.height;
 
     tooltip.style.left = `${pxX}px`;
     tooltip.style.top = `${pxY}px`;
@@ -216,7 +346,9 @@ function renderLineChart(container, series, currencyCode) {
 
   function hideHover() {
     guide.setAttribute("opacity", "0");
-    dot.setAttribute("opacity", "0");
+    for (const dot of dots) {
+      dot.setAttribute("opacity", "0");
+    }
     tooltip.hidden = true;
   }
 

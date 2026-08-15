@@ -9,7 +9,7 @@ import {
   NetworkError,
   ConfigError,
 } from "./api.js";
-import { renderChart } from "./chart.js";
+import { renderChart, PRIMARY_COLOR } from "./chart.js";
 
 // ---------------------------------------------------------------------------
 // Element references
@@ -334,7 +334,7 @@ async function handleCalculate() {
         date: p.date,
         value: result.shares * p.close * fxFromUSDAtEnd,
       }));
-    renderChart(series, currency);
+    renderChart([{ label: symbol, color: PRIMARY_COLOR, points: series }], currency);
 
     showEl(resultEl);
   } catch (err) {
