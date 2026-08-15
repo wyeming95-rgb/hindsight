@@ -828,8 +828,14 @@ async function handleCalculate() {
     lastPngFilename = `what-if-${symbol}.png`;
 
     // Reflect the current view in the address bar so it can be copied/shared
-    // directly, without adding a history entry per calculation.
-    history.replaceState(null, "", buildShareUrl(getCompareState()));
+    // directly, without adding a history entry per calculation. Guarded because
+    // replaceState can throw on a file:// origin (location.origin === "null");
+    // a failed URL sync must not block the result or the share bar.
+    try {
+      history.replaceState(null, "", buildShareUrl(getCompareState()));
+    } catch {
+      /* URL sync unavailable (e.g. file:// origin); share via Copy link still works */
+    }
     showEl(shareBarEl);
   } catch (err) {
     errorEl.textContent = friendlyErrorMessage(err);

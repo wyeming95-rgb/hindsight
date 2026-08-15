@@ -955,8 +955,8 @@ button:focus-visible {
   text-align: center;
 }
 
-/* `.hidden` (display:none) governs mount state; `.toast-visible` (added by
-   JS in a later task) drives the fade so the transition can play. */
+/* `.hidden` (display:none) governs mount state; JS toggles `.hidden` to
+   show/hide the toast, and `.toast:not(.hidden)` drives the fade animation. */
 .toast:not(.hidden) {
   animation: toast-fade 2.4s ease-in-out both;
 }

@@ -31,8 +31,9 @@ date-aligned chart:
 
 - **Compare with the S&P 500.** Tick the box and the same lump sum is run
   against SPY as a market benchmark.
-- **Add up to two more tickers.** Each added stock gets its own row and its own
-  line on the chart.
+- **Add more tickers.** Each added stock gets its own row and its own line on
+  the chart — up to three more when the benchmark is off, or two more alongside
+  the S&P 500, always within the four-line cap.
 - **Four-line cap.** The chart shows at most four lines — your stock plus any
   combination of the benchmark and extra tickers. The "add" button and the
   benchmark toggle disable themselves once you reach the cap.
