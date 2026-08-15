@@ -47,3 +47,43 @@ export function computeResult({
   const multiple = finalValue / amount;
   return { investedUSD, shares, finalValueUSD, finalValue, profit, returnPct, multiple };
 }
+
+export function rankResults(entries) {
+  const sorted = [...entries].sort((a, b) => {
+    if (b.result.finalValue !== a.result.finalValue) {
+      return b.result.finalValue - a.result.finalValue;
+    }
+    return a.symbol < b.symbol ? -1 : a.symbol > b.symbol ? 1 : 0;
+  });
+  return sorted.map((e, i) => ({ ...e, rank: i + 1 }));
+}
+
+export function subtractMonths(isoDate, months) {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  // Zero-index the day first so setUTCMonth can't roll the date forward into
+  // the next month when the target month is shorter than the source day.
+  // e.g. "2026-03-31" minus 1 month must land in February, not "2026-03-03".
+  const dt = new Date(Date.UTC(y, m - 1, 1));
+  dt.setUTCMonth(dt.getUTCMonth() - months);
+  // Clamp the day to the last valid day of the resulting month.
+  const lastDay = new Date(Date.UTC(dt.getUTCFullYear(), dt.getUTCMonth() + 1, 0)).getUTCDate();
+  dt.setUTCDate(Math.min(d, lastDay));
+  return dt.toISOString().slice(0, 10);
+}
+
+export function computeRegret(points, opts) {
+  const { startDate, monthsEarlier, amount, fxToUSDAtStart, fxFromUSDAtEnd, priceAtEnd, actualFinalValue } = opts;
+  const earlierTarget = subtractMonths(startDate, monthsEarlier);
+  if (points.length === 0 || earlierTarget < points[0].date) {
+    return { available: false, earlierDate: null, earlierFinalValue: null, extraValue: null };
+  }
+  const pt = points.find((p) => p.date >= earlierTarget) || points[points.length - 1];
+  const investedUSD = amount * fxToUSDAtStart;
+  const earlierFinalValue = (investedUSD / pt.close) * priceAtEnd * fxFromUSDAtEnd;
+  return {
+    available: true,
+    earlierDate: pt.date,
+    earlierFinalValue,
+    extraValue: earlierFinalValue - actualFinalValue,
+  };
+}

@@ -24,6 +24,56 @@ It is responsive and adapts to light or dark via `prefers-color-scheme`.
 - If your chosen date predates the earliest available data (e.g. before a
   company's IPO), the app snaps to the earliest available date and tells you.
 
+## Comparing stocks
+
+Beyond a single stock, you can line up to four investments side by side on one
+date-aligned chart:
+
+- **Compare with the S&P 500.** Tick the box and the same lump sum is run
+  against SPY as a market benchmark.
+- **Add more tickers.** Each added stock gets its own row and its own line on
+  the chart — up to three more when the benchmark is off, or two more alongside
+  the S&P 500, always within the four-line cap.
+- **Four-line cap.** The chart shows at most four lines — your stock plus any
+  combination of the benchmark and extra tickers. The "add" button and the
+  benchmark toggle disable themselves once you reach the cap.
+
+When you compare, the app adds:
+
+- **A ranked results table.** Every stock is sorted by final value, with the
+  winner's row highlighted, showing each one's final value, return, and
+  multiple.
+- **A beat-the-market verdict.** With the S&P 500 benchmark on, a one-line
+  verdict tells you whether your stock beat, matched, or lagged the market and
+  by how much — colored green for a win, red for a lag.
+- **Preset chips.** The "Try an example" chips (e.g. *Apple · 10y ago*) fill in
+  a ticker and date and run the calculation in one click.
+
+Each stock is date-snapped against its **own** price history, so a ticker whose
+data starts after your chosen date still lines up correctly. A compare ticker
+that fails to load is skipped inline with a notice; only the primary stock
+failing aborts the whole calculation.
+
+### The regret meter
+
+For your primary stock, the result also answers "what if I'd invested a year
+earlier?" — it looks up the price twelve months before your (snapped) start
+date and reports how much more (or less) you'd have today. If a year earlier is
+before the stock's price history, it says so instead.
+
+## Sharing
+
+- **Shareable, auto-running links.** After every calculation the address bar is
+  updated (via `history.replaceState`, so it does not spam your back button)
+  with a link that encodes the stock, amount, currency, date, benchmark, and
+  compare tickers. Open that link in a fresh tab and the form is repopulated and
+  the calculation runs automatically.
+- **Copy link.** The *Copy link* button copies the same shareable URL to your
+  clipboard and confirms with a toast.
+- **Downloadable PNG card.** *Download image* renders a shareable result card
+  (headline value, key stats, and a sparkline of your stock's growth) to a PNG
+  entirely on-canvas — no network fonts, no external libraries.
+
 ## One-time setup
 
 You need a free Twelve Data API key.
@@ -98,6 +148,14 @@ requests per day**. A single calculation makes a few calls (price series plus FX
 lookups), so heavy back-to-back use can hit the per-minute limit — the app shows
 a friendly "try again in a minute" message when that happens. FX lookups fall
 back to Frankfurter, which is free and unmetered for typical use.
+
+**Multi-stock compares cost more requests.** Each ticker (your stock, the S&P
+500 benchmark, and any added tickers — up to four total) is a separate price
+call. To stay under the ~8/min free-tier limit, those price calls are made
+**sequentially** with spacing rather than all at once, so a four-line compare
+takes noticeably longer to load than a single stock. The FX conversion is
+ticker-independent, so it is **fetched once and reused** for every stock in the
+comparison instead of once per ticker.
 
 ## Not financial advice
 

@@ -618,6 +618,371 @@ button:focus-visible {
   white-space: nowrap;
 }
 
+/* Multi-series tooltip content: a date heading plus one swatch/label/value
+   row per series (single-series tooltips stay plain text, set above). */
+.chart-tooltip-date {
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.chart-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  white-space: nowrap;
+}
+
+.chart-tooltip-row + .chart-tooltip-row {
+  margin-top: 0.125rem;
+}
+
+.chart-tooltip-swatch {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  flex: none;
+}
+
+.chart-tooltip-label {
+  font-weight: 600;
+}
+
+.chart-tooltip-value {
+  margin-left: auto;
+  padding-left: 0.75rem;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin-top: 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.chart-legend-swatch {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+  flex: none;
+}
+
+.chart-legend-label {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* ==========================================================================
+   Secondary button (shared by add-compare, share-bar actions)
+   ========================================================================== */
+
+.btn-secondary {
+  appearance: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.625rem 1.125rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease, transform 120ms ease;
+}
+
+.btn-secondary:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.btn-secondary:active {
+  transform: translateY(1px);
+}
+
+/* ==========================================================================
+   Presets
+   ========================================================================== */
+
+.presets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.presets-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.presets-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.preset-chip {
+  appearance: none;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease, transform 120ms ease;
+}
+
+.preset-chip:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.preset-chip:active {
+  transform: translateY(1px);
+}
+
+/* ==========================================================================
+   Compare block (inside the form)
+   ========================================================================== */
+
+.compare-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.compare-block-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.checkbox-field input[type="checkbox"] {
+  width: 1.125rem;
+  height: 1.125rem;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+.compare-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.compare-list:empty {
+  display: none;
+}
+
+/* Added-ticker rows are inserted by JS (Task 6) as
+   `.compare-row` > (label text + `.compare-row-remove` button). */
+.compare-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.5rem 0.75rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Let the ticker input fill the row so the remove control sits directly
+   beside it instead of floating at the far edge with a wide dead gap. */
+.compare-row .combobox {
+  flex: 1;
+  min-width: 0;
+}
+
+.compare-row-remove {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm);
+  transition: color 120ms ease, background-color 120ms ease;
+}
+
+.compare-row-remove:hover {
+  color: var(--color-loss);
+  background: var(--color-loss-bg);
+}
+
+.btn-add-compare {
+  align-self: flex-start;
+}
+
+/* ==========================================================================
+   Verdict / regret
+   ========================================================================== */
+
+.verdict {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* Beating / lagging the benchmark carries the same semantic color as the
+   profit and return stats. Scoped so it wins over the neutral default
+   despite `.is-gain`/`.is-loss` appearing earlier in the source. */
+.verdict.is-gain {
+  color: var(--color-gain);
+}
+
+.verdict.is-loss {
+  color: var(--color-loss);
+}
+
+.regret {
+  color: var(--color-muted);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  max-width: 52ch;
+  margin: 0 auto;
+  text-wrap: pretty;
+}
+
+/* ==========================================================================
+   Ranked results table
+   ========================================================================== */
+
+.ranked-results:empty {
+  display: none;
+}
+
+.ranked-results {
+  overflow-x: auto;
+  text-align: left;
+}
+
+/* Filled by JS (Task 6/7) as `table.ranked-table`, with the top
+   performer's row carrying `.rank-1`. */
+.ranked-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.ranked-table th,
+.ranked-table td {
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.ranked-table th:first-child,
+.ranked-table td:first-child {
+  text-align: left;
+  font-variant-numeric: normal;
+}
+
+.ranked-table th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.ranked-table tr:last-child td {
+  border-bottom: none;
+}
+
+.ranked-table tr.rank-1 td {
+  /* Fallback: flat accent tint for engines without color-mix. */
+  background: var(--color-gain-bg);
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-gain-bg));
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   Share bar
+   ========================================================================== */
+
+.share-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+/* ==========================================================================
+   Toast
+   ========================================================================== */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-6);
+  transform: translateX(-50%);
+  z-index: 100;
+  max-width: calc(100vw - 2 * var(--space-5));
+  background: var(--color-text);
+  color: var(--color-bg);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-card);
+  text-align: center;
+}
+
+/* `.hidden` (display:none) governs mount state; JS toggles `.hidden` to
+   show/hide the toast, and `.toast:not(.hidden)` drives the fade animation. */
+.toast:not(.hidden) {
+  animation: toast-fade 2.4s ease-in-out both;
+}
+
+@keyframes toast-fade {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px);
+  }
+  10%,
+  85% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast:not(.hidden) {
+    animation: none;
+  }
+}
+
 /* ==========================================================================
    Disclaimer
    ========================================================================== */
@@ -651,5 +1016,22 @@ button:focus-visible {
   .stat-grid {
     grid-template-columns: 1fr;
     gap: var(--space-3);
+  }
+
+  .share-bar {
+    flex-direction: column;
+  }
+
+  .share-bar .btn-secondary {
+    width: 100%;
+  }
+
+  .ranked-table {
+    font-size: 0.8125rem;
+  }
+
+  .ranked-table th,
+  .ranked-table td {
+    padding: 0.5rem 0.5rem;
   }
 }
