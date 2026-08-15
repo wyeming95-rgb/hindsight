@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { computeResult, CURRENCIES, formatMoney, formatMultiple, formatPct } from "../calc.js";
+import { computeResult, CURRENCIES, formatMoney, formatMultiple, formatPct, rankResults, computeRegret } from "../calc.js";
 
 test("computeResult: basic gain with 1:1 FX", () => {
   const r = computeResult({
@@ -52,4 +52,50 @@ test("formatMultiple and formatPct", () => {
   assert.equal(formatMultiple(5), "5.0×");
   assert.equal(formatPct(400), "+400.0%");
   assert.equal(formatPct(-60), "-60.0%");
+});
+
+test("rankResults sorts by finalValue desc with 1-based rank", () => {
+  const entries = [
+    { symbol: "AAA", result: { finalValue: 100 } },
+    { symbol: "BBB", result: { finalValue: 300 } },
+    { symbol: "CCC", result: { finalValue: 200 } },
+  ];
+  const ranked = rankResults(entries);
+  assert.deepEqual(ranked.map((e) => e.symbol), ["BBB", "CCC", "AAA"]);
+  assert.deepEqual(ranked.map((e) => e.rank), [1, 2, 3]);
+});
+
+test("rankResults tie-breaks by symbol asc", () => {
+  const ranked = rankResults([
+    { symbol: "ZZZ", result: { finalValue: 100 } },
+    { symbol: "AAA", result: { finalValue: 100 } },
+  ]);
+  assert.deepEqual(ranked.map((e) => e.symbol), ["AAA", "ZZZ"]);
+});
+
+test("computeRegret returns extra value for an earlier entry", () => {
+  const points = [
+    { date: "2013-08-14", close: 5 },
+    { date: "2014-08-14", close: 8 },
+    { date: "2015-08-14", close: 10 },
+    { date: "2026-08-14", close: 50 },
+  ];
+  // Actual: invest at 2015 (price 10). Earlier: 2014 (price 8). 1:1 FX.
+  const r = computeRegret(points, {
+    startDate: "2015-08-14", monthsEarlier: 12, amount: 1000,
+    fxToUSDAtStart: 1, fxFromUSDAtEnd: 1, priceAtEnd: 50, actualFinalValue: 5000,
+  });
+  assert.equal(r.available, true);
+  assert.equal(r.earlierDate, "2014-08-14");
+  assert.equal(r.earlierFinalValue, 6250); // (1000/8)*50
+  assert.equal(r.extraValue, 1250);        // 6250 - 5000
+});
+
+test("computeRegret unavailable when earlier date precedes data", () => {
+  const points = [{ date: "2015-08-14", close: 10 }, { date: "2026-08-14", close: 50 }];
+  const r = computeRegret(points, {
+    startDate: "2015-08-14", monthsEarlier: 12, amount: 1000,
+    fxToUSDAtStart: 1, fxFromUSDAtEnd: 1, priceAtEnd: 50, actualFinalValue: 5000,
+  });
+  assert.equal(r.available, false);
 });

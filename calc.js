@@ -47,3 +47,37 @@ export function computeResult({
   const multiple = finalValue / amount;
   return { investedUSD, shares, finalValueUSD, finalValue, profit, returnPct, multiple };
 }
+
+export function rankResults(entries) {
+  const sorted = [...entries].sort((a, b) => {
+    if (b.result.finalValue !== a.result.finalValue) {
+      return b.result.finalValue - a.result.finalValue;
+    }
+    return a.symbol < b.symbol ? -1 : a.symbol > b.symbol ? 1 : 0;
+  });
+  return sorted.map((e, i) => ({ ...e, rank: i + 1 }));
+}
+
+function subtractMonths(isoDate, months) {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCMonth(dt.getUTCMonth() - months);
+  return dt.toISOString().slice(0, 10);
+}
+
+export function computeRegret(points, opts) {
+  const { startDate, monthsEarlier, amount, fxToUSDAtStart, fxFromUSDAtEnd, priceAtEnd, actualFinalValue } = opts;
+  const earlierTarget = subtractMonths(startDate, monthsEarlier);
+  if (points.length === 0 || earlierTarget < points[0].date) {
+    return { available: false, earlierDate: null, earlierFinalValue: null, extraValue: null };
+  }
+  const pt = points.find((p) => p.date >= earlierTarget) || points[points.length - 1];
+  const investedUSD = amount * fxToUSDAtStart;
+  const earlierFinalValue = (investedUSD / pt.close) * priceAtEnd * fxFromUSDAtEnd;
+  return {
+    available: true,
+    earlierDate: pt.date,
+    earlierFinalValue,
+    extraValue: earlierFinalValue - actualFinalValue,
+  };
+}
