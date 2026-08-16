@@ -28,6 +28,10 @@ number that also reads as a shareable insight ("dividends reinvested added $14,3
   `Price growth $X · Dividends reinvested added $Y`, where **X + Y = the headline**.
   The line is shown only when `Y` rounds to more than the currency's minor unit
   (so growth stocks with no dividends stay clean).
+- **Withholding depends on the chosen currency.** USD (US investor) withholds **0%**.
+  Each non-USD currency applies a US dividend-withholding rate from a treaty-based
+  lookup, reducing every dividend **before** it is reinvested. When the rate is > 0 and
+  dividends were paid, the breakdown line names it (e.g. "after 30% US withholding").
 - Total return applies to the **primary stock, every compare ticker, the S&P 500
   benchmark, the ranked table, the regret meter, and the growth chart** — so the
   chart's endpoint matches the headline and the beat-the-market verdict is correct.
@@ -40,8 +44,9 @@ number that also reads as a shareable insight ("dividends reinvested added $14,3
 
 - No price-vs-total **toggle** — total return is the number; the breakdown line tells
   the rest of the story.
-- No **dividend withholding tax** modeling — DRIP is **gross** (the standard basis for
-  quoted "total return"); the footer already discloses taxes are ignored.
+- No **per-country** tax logic beyond the currency→rate map — currency is used as a
+  proxy for tax residence (an educational approximation, noted in the UI). No handling
+  of tax-advantaged accounts, qualified-dividend rates, or the user's own income tax.
 - No dividend **cash-accumulation** mode — reinvestment only.
 - No DCA, no new tickers/markets, no server, no accounts.
 - No external libraries; still fully self-contained.
@@ -58,17 +63,31 @@ number that also reads as a shareable insight ("dividends reinvested added $14,3
 ## The DRIP model
 
 Given the already-fetched price `points` (date-ASC `{date, close}`), the dividend
-schedule, and the snapped start date:
+schedule, the snapped start date, and a `withholdingRate` (from the chosen currency):
 
 1. `initialShares = investedUSD / priceAtStart` (unchanged from today).
 2. Walk dividends whose `exDate` falls in **(startDate, endDate]**, in date order. For
-   each, find the price point on-or-after `exDate` (`closeOnExDate`) and reinvest:
-   `shares += shares × amount / closeOnExDate`.
+   each, find the price point on-or-after `exDate` (`closeOnExDate`), apply withholding,
+   and reinvest the net dividend:
+   `netAmount = amount × (1 − withholdingRate)`;
+   `shares += shares × netAmount / closeOnExDate`.
 3. `finalShares` = shares after all in-window dividends.
 4. Derived values (then multiplied by `fxFromUSDAtEnd`):
    - `totalFinalValueUSD = finalShares × priceAtEnd`  ← headline
    - `priceComponentUSD  = initialShares × priceAtEnd` ← "price growth"
    - `dividendComponentUSD = totalFinalValueUSD − priceComponentUSD` ← "dividends added"
+
+**Withholding rates (currency → US dividend withholding).** A static map keyed by
+currency code; the rate is applied to every dividend before reinvestment. Rates reflect
+the portfolio-dividend treaty rate for the currency's representative country (and the
+statutory 30% where no US tax treaty exists). Currency is a **proxy for tax residence** —
+an educational approximation surfaced with a UI note.
+
+| USD | EUR | GBP | JPY | CAD | AUD | CHF | CNY | INR | HKD | SGD | MYR |
+|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|
+| 0% | 15% | 15% | 10% | 15% | 15% | 15% | 10% | 25% | 30% | 30% | 30% |
+
+HKD, SGD, and MYR have no US tax treaty → the full statutory 30%.
 
 **No double-counting:** Twelve Data's default `time_series` close is **split-adjusted
 only, not dividend-adjusted** (verified: AAPL 2016-08-16 close = $27.35 ≈ the raw
@@ -93,13 +112,17 @@ multiplier at the next plotted point.
 
 ### calc.js — pure additions (unit-tested)
 
-- `simulateDrip(points, dividends, startDate)` → `{ multiplierAtEnd, path }` where
-  `path` is a per-point cumulative share multiplier (multiplier 1.0 at/BEFORE start,
-  stepping up on each in-window dividend). Pure; no dates fetched, no side effects.
-- `computeResult(...)` gains an optional dividend input so it can return the total,
-  price, and dividend components together (`{ finalValue, priceComponent,
-  dividendComponent, profit, returnPct, multiple, shares }`). With no dividends the
-  dividend component is 0 and behavior is identical to today (backward compatible).
+- `WITHHOLDING_RATES` — a static `{ currencyCode: rate }` map (the table above), with a
+  `withholdingRateFor(currencyCode)` helper defaulting unknown codes to 0.
+- `simulateDrip(points, dividends, startDate, withholdingRate)` → `{ multiplierAtEnd,
+  path }` where `path` is a per-point cumulative share multiplier (1.0 at/BEFORE start,
+  stepping up on each in-window dividend, net of withholding). Pure; no side effects.
+  `withholdingRate` defaults to 0, so omitting it reproduces gross DRIP.
+- `computeResult(...)` gains an optional dividend input (and withholding rate) so it can
+  return the total, price, and dividend components together (`{ finalValue,
+  priceComponent, dividendComponent, profit, returnPct, multiple, shares }`). With no
+  dividends the dividend component is 0 and behavior is identical to today (backward
+  compatible).
 - `computeRegret(...)` uses the same DRIP path from the earlier start date, so the
   "year earlier" comparison is total-return vs total-return.
 - Reuses `formatMoney`, `formatMultiple`, `formatPct`.
@@ -114,12 +137,17 @@ multiplier at the next plotted point.
 
 - In the calculate flow, after resolving the symbol list and fetching FX once, fetch
   **price series and dividends per symbol** (throttled, per-symbol error isolation).
+- Derive `withholdingRate = withholdingRateFor(currency)` once and apply it to every
+  symbol's DRIP (all lines share the chosen currency, so the rate is uniform, including
+  SPY).
 - Run `computeResult` with dividends per symbol; build each symbol's total-return value
   series for the chart; `rankResults` by total-return `finalValue`; verdict vs SPY uses
   total return; `computeRegret` on the primary uses DRIP.
 - Render the **breakdown line** under the headline (shown only when the dividend
   component rounds to a nonzero amount at the currency's display precision — i.e.
-  ≥ one minor unit, so no-dividend growth stocks stay clean).
+  ≥ one minor unit, so no-dividend growth stocks stay clean). When
+  `withholdingRate > 0`, the line appends the rate, e.g. "Dividends reinvested (after
+  30% US withholding) added RM Y".
 - **PNG card + shareable URL:** the card shows the total-return headline; the URL schema
   is unchanged (dividends are always modeled, not a toggle), so existing shared links
   keep working and simply become total-return.
@@ -136,8 +164,9 @@ multiplier at the next plotted point.
 3. For each symbol sequentially (throttled): fetch price series **and** dividends;
    collect successes + per-symbol errors; a dividends-only failure downgrades that
    symbol to price-only rather than failing it.
-4. For each successful symbol: apply date-snapping, `simulateDrip`, `computeResult` with
-   dividends, and build its total-return currency value series.
+4. For each successful symbol: apply date-snapping, `simulateDrip` (with the
+   currency's `withholdingRate`), `computeResult` with dividends, and build its
+   total-return currency value series.
 5. `rankResults` by total-return value; verdict vs SPY (total return); `computeRegret`
    on the primary (total return).
 6. Render headline, breakdown line, ranked table, verdict, regret, and
@@ -162,10 +191,15 @@ multiplier at the next plotted point.
   - **Component invariant**: `priceComponent + dividendComponent === finalValue`.
   - **Path**: multiplier is 1.0 up to the first in-window dividend and monotonically
     non-decreasing thereafter.
-- Browser verification with a live key: a dividend payer (e.g. AAPL/KO/MSFT) shows the
-  breakdown line and a chart endpoint matching the headline; a growth stock (NVDA) shows
-  **no** breakdown line; the S&P 500 benchmark verdict reflects total return; a symbol
-  with dividends unavailable degrades gracefully — in light/dark, mobile/desktop.
+  - **Withholding**: `withholdingRate = 0` (USD) equals gross DRIP; a positive rate
+    reduces the dividend component by exactly that fraction; `withholdingRateFor`
+    returns the mapped rate per currency and 0 for unknown codes.
+- Browser verification with a live key: a dividend payer (e.g. AAPL/KO/MSFT) in **USD**
+  shows the breakdown line with no withholding note and a chart endpoint matching the
+  headline; the **same in MYR** shows a smaller dividend component and the "after 30% US
+  withholding" note; a growth stock (NVDA) shows **no** breakdown line; the S&P 500
+  benchmark verdict reflects total return; a symbol with dividends unavailable degrades
+  gracefully — in light/dark, mobile/desktop.
 
 ## Rate-limit budget
 
