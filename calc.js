@@ -91,14 +91,18 @@ export function subtractMonths(isoDate, months) {
 }
 
 export function computeRegret(points, opts) {
-  const { startDate, monthsEarlier, amount, fxToUSDAtStart, fxFromUSDAtEnd, priceAtEnd, actualFinalValue } = opts;
+  const {
+    startDate, monthsEarlier, amount, fxToUSDAtStart, fxFromUSDAtEnd,
+    priceAtEnd, actualFinalValue, dividends = [], withholdingRate = 0,
+  } = opts;
   const earlierTarget = subtractMonths(startDate, monthsEarlier);
   if (points.length === 0 || earlierTarget < points[0].date) {
     return { available: false, earlierDate: null, earlierFinalValue: null, extraValue: null };
   }
   const pt = points.find((p) => p.date >= earlierTarget) || points[points.length - 1];
   const investedUSD = amount * fxToUSDAtStart;
-  const earlierFinalValue = (investedUSD / pt.close) * priceAtEnd * fxFromUSDAtEnd;
+  const { multiplierAtEnd } = simulateDrip(points, dividends, pt.date, withholdingRate);
+  const earlierFinalValue = (investedUSD / pt.close) * multiplierAtEnd * priceAtEnd * fxFromUSDAtEnd;
   return {
     available: true,
     earlierDate: pt.date,

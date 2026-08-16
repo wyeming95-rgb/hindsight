@@ -218,3 +218,23 @@ test("computeResult: default multiplier reproduces price-only result", () => {
   assert.equal(r.dividendComponent, 0);
   assert.equal(r.finalShares, r.shares);
 });
+
+test("computeRegret: earlier scenario reinvests dividends (total return)", () => {
+  const points = [
+    { date: "2014-01-01", close: 5 },
+    { date: "2015-01-01", close: 10 },
+    { date: "2015-06-01", close: 10 }, // dividend ex-date
+    { date: "2026-01-01", close: 50 },
+  ];
+  const dividends = [{ exDate: "2015-06-01", amount: 2 }]; // factor 1.2 at close 10
+  // Actual (start 2015-01-01): 100 shares * 1.2 * 50 = 6000
+  const r = computeRegret(points, {
+    startDate: "2015-01-01", monthsEarlier: 12, amount: 1000,
+    fxToUSDAtStart: 1, fxFromUSDAtEnd: 1, priceAtEnd: 50,
+    actualFinalValue: 6000, dividends, withholdingRate: 0,
+  });
+  assert.equal(r.available, true);
+  assert.equal(r.earlierDate, "2014-01-01");
+  assert.equal(r.earlierFinalValue, 12000); // (1000/5) * 1.2 * 50
+  assert.equal(r.extraValue, 6000);         // 12000 - 6000
+});
