@@ -10,7 +10,7 @@ import {
   NotFoundError,
   NetworkError,
 } from "./api.js";
-import { renderChart, PRIMARY_COLOR, BENCHMARK_COLOR, LINE_COLORS } from "./chart.js";
+import { renderChart, PRIMARY_COLOR, BENCHMARK_COLOR, LINE_COLORS } from "./chart.js?v=1";
 import { decodeState, buildShareUrl, copyLink, renderCardPng } from "./share.js";
 
 // ---------------------------------------------------------------------------
