@@ -1,17 +1,8 @@
-const TD_BASE = "https://api.twelvedata.com";
+const TD_BASE = "/api/td";
 
 export class RateLimitError extends Error {}
 export class NotFoundError extends Error {}
 export class NetworkError extends Error {}
-export class ConfigError extends Error {}
-
-function apiKey() {
-  const k = window.TD_API_KEY;
-  if (!k || k === "YOUR_TWELVE_DATA_API_KEY") {
-    throw new ConfigError("Missing Twelve Data API key. Copy config.example.js to config.js and add your key.");
-  }
-  return k;
-}
 
 async function getJSON(url) {
   let res;
@@ -31,7 +22,7 @@ async function getJSON(url) {
 
 export async function searchSymbols(query) {
   if (!query || query.trim().length < 1) return [];
-  const url = `${TD_BASE}/symbol_search?symbol=${encodeURIComponent(query)}&outputsize=8&apikey=${apiKey()}`;
+  const url = `${TD_BASE}/symbol_search?symbol=${encodeURIComponent(query)}&outputsize=8`;
   const data = await getJSON(url);
   return (data.data || []).map((d) => ({
     symbol: d.symbol,
@@ -42,7 +33,7 @@ export async function searchSymbols(query) {
 
 export async function fetchPriceSeries(symbol) {
   const url = `${TD_BASE}/time_series?symbol=${encodeURIComponent(symbol)}` +
-    `&interval=1day&outputsize=5000&order=ASC&apikey=${apiKey()}`;
+    `&interval=1day&outputsize=5000&order=ASC`;
   const data = await getJSON(url);
   const values = data.values || [];
   if (values.length === 0) throw new NotFoundError(`No price data for ${symbol}.`);
@@ -54,7 +45,7 @@ export async function fetchPriceSeries(symbol) {
 // ascending by date. Returns [] when the symbol has never paid a dividend.
 export async function fetchDividends(symbol) {
   const url = `${TD_BASE}/dividends?symbol=${encodeURIComponent(symbol)}` +
-    `&range=full&apikey=${apiKey()}`;
+    `&range=full`;
   const data = await getJSON(url);
   const rows = data.dividends || [];
   return rows
@@ -79,7 +70,7 @@ export async function fetchFxFromUSD(currency, date) {
 async function usdTo(currency, date) {
   try {
     const url = `${TD_BASE}/time_series?symbol=USD/${currency}` +
-      `&interval=1day&outputsize=1&end_date=${date}&order=DESC&apikey=${apiKey()}`;
+      `&interval=1day&outputsize=1&end_date=${date}&order=DESC`;
     const data = await getJSON(url);
     const v = (data.values || [])[0];
     if (v) return parseFloat(v.close);

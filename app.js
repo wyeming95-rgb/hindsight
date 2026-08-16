@@ -9,9 +9,8 @@ import {
   RateLimitError,
   NotFoundError,
   NetworkError,
-  ConfigError,
 } from "./api.js";
-import { renderChart, PRIMARY_COLOR, BENCHMARK_COLOR, LINE_COLORS } from "./chart.js?v=1";
+import { renderChart, PRIMARY_COLOR, BENCHMARK_COLOR, LINE_COLORS } from "./chart.js";
 import { decodeState, buildShareUrl, copyLink, renderCardPng } from "./share.js";
 
 // ---------------------------------------------------------------------------
@@ -153,8 +152,6 @@ updateThemeToggleLabel(currentTheme());
 
 let debounceTimer = null;
 let searchSeq = 0;
-// Show the setup message once for a missing API key; don't spam it on every keystroke.
-let configErrorShown = false;
 
 function hideSuggestions() {
   suggestionsEl.innerHTML = "";
@@ -217,13 +214,6 @@ tickerInput.addEventListener("input", () => {
     } catch (err) {
       if (seq !== searchSeq) return;
       hideSuggestions();
-      // A missing/placeholder API key affects every request, not just this one —
-      // surface it once instead of leaving the user with silent, empty suggestions.
-      if (err instanceof ConfigError && !configErrorShown) {
-        configErrorShown = true;
-        errorEl.textContent = friendlyErrorMessage(err);
-        showEl(errorEl);
-      }
     }
   }, 300);
 });
@@ -372,11 +362,6 @@ function createCompareRow() {
       } catch (err) {
         if (seq !== rowSeq) return;
         hideRowSuggestions();
-        if (err instanceof ConfigError && !configErrorShown) {
-          configErrorShown = true;
-          errorEl.textContent = friendlyErrorMessage(err);
-          showEl(errorEl);
-        }
       }
     }, 300);
   });
@@ -529,9 +514,6 @@ function hideEl(el) {
 }
 
 function friendlyErrorMessage(err) {
-  if (err instanceof ConfigError) {
-    return "No API key found. Copy config.example.js to config.js and add your free Twelve Data API key (see the README).";
-  }
   if (err instanceof RateLimitError) {
     return "You've hit the free data limit — try again in a minute.";
   }
