@@ -78,60 +78,54 @@ before the stock's price history, it says so instead.
   (headline value, key stats, and a sparkline of your stock's growth) to a PNG
   entirely on-canvas — no network fonts, no external libraries.
 
-## One-time setup
+## Local development
 
-You need a free Twelve Data API key.
+The Twelve Data key is **never** shipped to the browser. It lives server-side in
+a Cloudflare Pages Function (`functions/api/td/[[path]].js`) that proxies and
+edge-caches the three endpoints the app uses. The browser only ever calls
+same-origin `/api/td/*`.
 
-1. Copy the example config to a real config file:
+1. Get a free API key at <https://twelvedata.com> (the free tier is enough).
+2. Copy the dev-vars template and add your key:
    ```sh
-   cp config.example.js config.js
+   cp .dev.vars.example .dev.vars
+   # then edit .dev.vars and set TD_API_KEY=your_actual_key
    ```
-2. Get a free API key at <https://twelvedata.com> (create an account; the free
-   tier is enough).
-3. Open `config.js` and paste your key in place of the placeholder:
-   ```js
-   window.TD_API_KEY = "your_actual_key_here";
+   `.dev.vars` is git-ignored, so your key never gets committed.
+3. Install the dev toolchain (once) and start the local server:
+   ```sh
+   npm install
+   npm run dev        # wrangler pages dev . — serves static files + functions
    ```
+   Open the URL wrangler prints (default <http://localhost:8788>).
 
-`config.js` is git-ignored so your key never gets committed. The Frankfurter FX
-fallback needs no key.
-
-## How to run
-
-**You must serve the files over HTTP.** This app uses ES module imports
-(`<script type="module">`), and browsers block module loading from the
-`file://` protocol. Opening `index.html` directly by double-clicking it will
-**not** work — you will see CORS/module errors in the console.
-
-Start any static server from the project directory and open the URL it prints:
-
-```sh
-# Python 3 (built in on most systems)
-python -m http.server 8000
-# then open http://localhost:8000
-
-# or Node, no install needed
-npx serve
-```
+> Note: the edge cache is a no-op under local `wrangler pages dev` — caching is a
+> production behavior. The proxy still works locally, just without caching.
 
 ## How to deploy
 
-It is just static files, so any static host works. Deploy the whole directory,
-and make sure `config.js` exists on the host with your key (it is git-ignored,
-so it will not be in your repo — add it in the host's UI, an environment-based
-build step, or upload it directly).
+Deploy to Cloudflare Pages (the functions in `functions/` deploy automatically
+alongside the static files):
 
-- **Netlify / Vercel:** drag-and-drop the folder, or connect the repo with no
-  build command and the project root as the publish directory. Add `config.js`
-  (containing your key) as part of the deploy.
-- **GitHub Pages:** push to a repo and enable Pages on the branch/folder. Since
-  `config.js` is git-ignored, either commit a `config.js` for this public
-  deploy (note: the key is then public — see limits below) or generate it during
-  a build/Action.
+```sh
+npm run deploy       # wrangler pages deploy .
+```
 
-Because the key ships to the browser, a Twelve Data free-tier key on a public
-site is visible to anyone. That is acceptable for a personal/educational demo;
-for anything more, proxy the API behind your own backend.
+Or connect the repo in the Cloudflare Pages dashboard with **no build command**
+and the **project root** as the output directory.
+
+Set the key **once** as an encrypted secret (never as a committed file):
+
+```sh
+npx wrangler pages secret put TD_API_KEY
+```
+
+…or in the dashboard under **Settings → Environment variables** (encrypted). The
+Frankfurter FX fallback needs no key.
+
+Because the key stays server-side, it is never visible in page source or the
+Network tab — the proxy also caches popular tickers at the edge, so a traffic
+spike collapses to about one upstream call per ticker per TTL window.
 
 ## Running tests
 
