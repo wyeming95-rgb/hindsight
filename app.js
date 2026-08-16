@@ -763,7 +763,6 @@ async function handleCalculate() {
 
     const startDate = primarySnap.startPoint.date;
     const endDate = primarySnap.endPoint.date;
-    const priceAtStart = primarySnap.startPoint.close;
     const priceAtEnd = primarySnap.endPoint.close;
 
     // FX fetched exactly once (regardless of how many tickers are being
