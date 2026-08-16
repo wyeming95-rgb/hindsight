@@ -13,6 +13,18 @@ export const CURRENCIES = [
   { code: "MYR", symbol: "RM",  locale: "ms-MY" },
 ];
 
+// US dividend withholding by the chosen currency's representative country
+// (portfolio-dividend treaty rate; statutory 30% where there is no US treaty).
+// Currency is a proxy for tax residence — an educational approximation.
+export const WITHHOLDING_RATES = {
+  USD: 0, EUR: 0.15, GBP: 0.15, JPY: 0.10, CAD: 0.15, AUD: 0.15,
+  CHF: 0.15, CNY: 0.10, INR: 0.25, HKD: 0.30, SGD: 0.30, MYR: 0.30,
+};
+
+export function withholdingRateFor(currencyCode) {
+  return WITHHOLDING_RATES[currencyCode] ?? 0;
+}
+
 export function formatMoney(value, currencyCode) {
   const c = CURRENCIES.find((x) => x.code === currencyCode) ?? CURRENCIES[0];
   return new Intl.NumberFormat(c.locale, {

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { computeResult, CURRENCIES, formatMoney, formatMultiple, formatPct, rankResults, computeRegret, subtractMonths } from "../calc.js";
+import { computeResult, CURRENCIES, formatMoney, formatMultiple, formatPct, rankResults, computeRegret, subtractMonths, withholdingRateFor } from "../calc.js";
 
 test("computeResult: basic gain with 1:1 FX", () => {
   const r = computeResult({
@@ -111,4 +111,13 @@ test("computeRegret unavailable when earlier date precedes data", () => {
     fxToUSDAtStart: 1, fxFromUSDAtEnd: 1, priceAtEnd: 50, actualFinalValue: 5000,
   });
   assert.equal(r.available, false);
+});
+
+test("withholdingRateFor: USD is zero, treaty rates map, unknown defaults to 0", () => {
+  assert.equal(withholdingRateFor("USD"), 0);
+  assert.equal(withholdingRateFor("MYR"), 0.30);
+  assert.equal(withholdingRateFor("JPY"), 0.10);
+  assert.equal(withholdingRateFor("INR"), 0.25);
+  assert.equal(withholdingRateFor("GBP"), 0.15);
+  assert.equal(withholdingRateFor("XXX"), 0); // unknown code
 });
