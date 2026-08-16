@@ -12,6 +12,7 @@ async function getJSON(url) {
     throw new NetworkError("Network request failed.");
   }
   if (res.status === 429) throw new RateLimitError("Rate limit reached.");
+  if (res.status >= 500) throw new NetworkError("Server problem — please try again.");
   const data = await res.json();
   if (data && data.status === "error") {
     if (String(data.code) === "429") throw new RateLimitError("Rate limit reached.");

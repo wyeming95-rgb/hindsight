@@ -1,5 +1,6 @@
 config.js
 .dev.vars
 node_modules/
+.wrangler/
 .superpowers/
 .claude/settings.local.json
