@@ -1,0 +1,4 @@
+# Copy this file to .dev.vars (gitignored) for local `wrangler pages dev`.
+# Get a free key at https://twelvedata.com. In production this is a Pages secret,
+# NOT this file.
+TD_API_KEY=your_key_here
