@@ -154,6 +154,7 @@ test("simulateDrip: withholding reduces the reinvested dividend", () => {
   // net = 2 * (1 - 0.25) = 1.5; factor = 1 + 1.5/10 = 1.15
   const r = simulateDrip(points, [{ exDate: "2020-06-01", amount: 2 }], "2020-01-01", 0.25);
   assert.equal(r.multiplierAtEnd, 1.15);
+  assert.deepEqual(r.path, [1, 1.15, 1.15]);
 });
 
 test("simulateDrip: dividends on/before start and after end are excluded", () => {
@@ -169,4 +170,27 @@ test("simulateDrip: dividends on/before start and after end are excluded", () =>
   ];
   const r = simulateDrip(points, divs, "2020-01-01", 0);
   assert.equal(r.multiplierAtEnd, 1);
+});
+
+test("simulateDrip: inclusive-end boundary — dividend with exDate equal to last point is included", () => {
+  const points = [
+    { date: "2020-01-01", close: 10 },
+    { date: "2020-12-01", close: 10 },
+  ];
+  // amount 2 at close 10 => factor 1 + 2/10 = 1.2
+  const r = simulateDrip(points, [{ exDate: "2020-12-01", amount: 2 }], "2020-01-01", 0);
+  assert.equal(r.multiplierAtEnd, 1.2);
+  assert.deepEqual(r.path, [1, 1.2]);
+});
+
+test("simulateDrip: nonpositive-close guard — zero close skips dividend reinvestment", () => {
+  const points = [
+    { date: "2020-01-01", close: 10 },
+    { date: "2020-06-01", close: 0 },
+    { date: "2020-12-01", close: 20 },
+  ];
+  // dividend on 2020-06-01 has close 0, so it is skipped (guard against division)
+  const r = simulateDrip(points, [{ exDate: "2020-06-01", amount: 2 }], "2020-01-01", 0);
+  assert.equal(r.multiplierAtEnd, 1);
+  assert.deepEqual(r.path, [1, 1, 1]);
 });
