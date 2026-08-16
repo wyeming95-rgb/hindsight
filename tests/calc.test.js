@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { computeResult, CURRENCIES, formatMoney, formatMultiple, formatPct, rankResults, computeRegret, subtractMonths, withholdingRateFor } from "../calc.js";
+import { computeResult, CURRENCIES, formatMoney, formatMultiple, formatPct, rankResults, computeRegret, subtractMonths, withholdingRateFor, simulateDrip } from "../calc.js";
 
 test("computeResult: basic gain with 1:1 FX", () => {
   const r = computeResult({
@@ -120,4 +120,53 @@ test("withholdingRateFor: USD is zero, treaty rates map, unknown defaults to 0",
   assert.equal(withholdingRateFor("INR"), 0.25);
   assert.equal(withholdingRateFor("GBP"), 0.15);
   assert.equal(withholdingRateFor("XXX"), 0); // unknown code
+});
+
+test("simulateDrip: no dividends yields all-ones path and multiplier 1", () => {
+  const points = [
+    { date: "2020-01-01", close: 10 },
+    { date: "2020-06-01", close: 10 },
+    { date: "2020-12-01", close: 20 },
+  ];
+  const r = simulateDrip(points, [], "2020-01-01", 0);
+  assert.equal(r.multiplierAtEnd, 1);
+  assert.deepEqual(r.path, [1, 1, 1]);
+});
+
+test("simulateDrip: one in-window dividend reinvests at its ex-date close", () => {
+  const points = [
+    { date: "2020-01-01", close: 10 },
+    { date: "2020-06-01", close: 10 }, // ex-date close = 10
+    { date: "2020-12-01", close: 20 },
+  ];
+  // amount 2 at close 10 => factor 1 + 2/10 = 1.2
+  const r = simulateDrip(points, [{ exDate: "2020-06-01", amount: 2 }], "2020-01-01", 0);
+  assert.equal(r.multiplierAtEnd, 1.2);
+  assert.deepEqual(r.path, [1, 1.2, 1.2]);
+});
+
+test("simulateDrip: withholding reduces the reinvested dividend", () => {
+  const points = [
+    { date: "2020-01-01", close: 10 },
+    { date: "2020-06-01", close: 10 },
+    { date: "2020-12-01", close: 20 },
+  ];
+  // net = 2 * (1 - 0.25) = 1.5; factor = 1 + 1.5/10 = 1.15
+  const r = simulateDrip(points, [{ exDate: "2020-06-01", amount: 2 }], "2020-01-01", 0.25);
+  assert.equal(r.multiplierAtEnd, 1.15);
+});
+
+test("simulateDrip: dividends on/before start and after end are excluded", () => {
+  const points = [
+    { date: "2020-01-01", close: 10 },
+    { date: "2020-06-01", close: 10 },
+    { date: "2020-12-01", close: 20 },
+  ];
+  const divs = [
+    { exDate: "2019-06-01", amount: 5 }, // before series
+    { exDate: "2020-01-01", amount: 5 }, // == startDate, excluded
+    { exDate: "2021-06-01", amount: 5 }, // after last point, excluded
+  ];
+  const r = simulateDrip(points, divs, "2020-01-01", 0);
+  assert.equal(r.multiplierAtEnd, 1);
 });

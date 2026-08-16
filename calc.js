@@ -99,3 +99,32 @@ export function computeRegret(points, opts) {
     extraValue: earlierFinalValue - actualFinalValue,
   };
 }
+
+// Simulates dividend reinvestment (DRIP) over a price series. Returns the
+// cumulative share multiplier at the end and a per-point path of that
+// multiplier. A dividend applies when startDate < exDate <= last point's
+// date, buying more shares at the close of the first point on/after its
+// ex-date, net of withholding.
+export function simulateDrip(points, dividends, startDate, withholdingRate = 0) {
+  const path = new Array(points.length).fill(1);
+  if (points.length === 0) return { multiplierAtEnd: 1, path };
+
+  const lastDate = points[points.length - 1].date;
+  const inWindow = (dividends || [])
+    .filter((d) => d.exDate > startDate && d.exDate <= lastDate)
+    .sort((a, b) => (a.exDate < b.exDate ? -1 : a.exDate > b.exDate ? 1 : 0));
+
+  let multiplier = 1;
+  let divIdx = 0;
+  for (let i = 0; i < points.length; i++) {
+    // points[i] is the first point on/after any dividend applied here, so its
+    // close is the reinvestment price.
+    while (divIdx < inWindow.length && inWindow[divIdx].exDate <= points[i].date) {
+      const net = inWindow[divIdx].amount * (1 - withholdingRate);
+      if (points[i].close > 0) multiplier *= 1 + net / points[i].close;
+      divIdx++;
+    }
+    path[i] = multiplier;
+  }
+  return { multiplierAtEnd: multiplier, path };
+}
