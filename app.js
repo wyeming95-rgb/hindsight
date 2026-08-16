@@ -11,7 +11,7 @@ import {
   NetworkError,
   ConfigError,
 } from "./api.js";
-import { renderChart, PRIMARY_COLOR, BENCHMARK_COLOR, LINE_COLORS } from "./chart.js";
+import { renderChart, PRIMARY_COLOR, BENCHMARK_COLOR, LINE_COLORS } from "./chart.js?v=1";
 import { decodeState, buildShareUrl, copyLink, renderCardPng } from "./share.js";
 
 // ---------------------------------------------------------------------------
@@ -845,6 +845,9 @@ async function handleCalculate() {
       el.classList.remove("is-gain", "is-loss");
       el.classList.add(isGain ? "is-gain" : "is-loss");
     }
+    // Tint the whole payoff panel (headline + accent seam) by outcome.
+    resultEl.classList.remove("is-gain", "is-loss");
+    resultEl.classList.add(isGain ? "is-gain" : "is-loss");
 
     summaryEl.textContent =
       `${formatMoney(amount, currency)} invested in ${symbol} on ${startDate} ` +

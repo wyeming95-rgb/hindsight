@@ -16,15 +16,17 @@ const PAD_RIGHT = 8;
 const PAD_TOP = 16;
 const PAD_BOTTOM = 24;
 
-// Stable color assignments for callers. The primary series (the user's own
-// ticker) gets PRIMARY_COLOR; a benchmark comparison gets BENCHMARK_COLOR;
-// any further tickers draw from LINE_COLORS in order.
-export const PRIMARY_COLOR = "#34d399";
-export const BENCHMARK_COLOR = "#fbbf24";
-// For extra tickers, in order. Three entries so that with the benchmark off a
-// user can draw primary + 3 compare lines (4 total) and every line stays a
-// distinct, theme-legible hue: blue, violet, rose (all readable on light/dark).
-export const LINE_COLORS = ["#60a5fa", "#c084fc", "#f472b6"];
+// Stable color assignments for callers, drawn from the site's 3-color system
+// (emerald / lime / red) plus a neutral. The primary series — the user's own
+// ticker — is emerald, the star of the chart. The S&P benchmark is a neutral
+// slate: it reads as "the market you're measured against," not a competing
+// hue. Any further compare tickers take the remaining system colors in order.
+export const PRIMARY_COLOR = "#34d399"; // emerald — your stock
+export const BENCHMARK_COLOR = "#8b98ac"; // neutral slate — the market baseline
+// Extra compare tickers, in order (max 3 when the benchmark is off). Kept on
+// the 3-color system: lime, then red, then a neutral fallback. Legend labels
+// disambiguate; the common case (your stock vs the market) stays emerald+slate.
+export const LINE_COLORS = ["#eafe4b", "#ff6b6b", "#b8c2d0"];
 
 function prefersReducedMotion() {
   return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;

@@ -1,48 +1,70 @@
 /* ==========================================================================
-   What If I'd Invested — design tokens & base styles
+   What If I'd Invested — "Signal" design system
+   Dark-first, terminal-credible fintech shell + a bold "Payoff" result moment.
+   No web fonts / CDNs: self-contained system stacks only.
    ========================================================================== */
 
 :root {
-  /* Tells the browser to render native controls (date picker, select
-     popups, scrollbars, form fields) in the light scheme by default. The
-     dark variants below flip this so those controls match the theme too —
-     an Apple-grade detail: the OS chrome should never fight the palette. */
-  color-scheme: light;
+  /* DARK is the committed identity, so it lives on the bare :root. The light
+     palette is layered on as an override for prefers-color-scheme: light and
+     for an explicit [data-theme="light"] choice. Native controls follow. */
+  color-scheme: dark;
 
-  /* Color tokens (light) */
-  --color-bg: #f7f5f1;
-  --color-surface: #ffffff;
-  --color-text: #16181d;
-  --color-muted: #6b7076;
-  --color-border: #e4e1da;
-  --color-accent: #1f5f4f;
-  --color-accent-hover: #1a5244;
-  --color-accent-contrast: #ffffff;
-  --color-gain: #1a7a4c;
-  --color-gain-bg: #e9f5ee;
-  --color-loss: #b3392c;
-  --color-loss-bg: #fbebe8;
-  --color-danger-bg: #fbebe8;
-  --color-danger-text: #7a2318;
-  --color-danger-border: #e8c3bd;
+  /* Grounds & surfaces — cool blue-black, never neutral gray */
+  --bg: #080b11;
+  --bg-grid: rgba(120, 150, 190, 0.05);
+  --surface: #10151d;
+  --surface-2: #161d28;
+  --surface-3: #1c2531;
 
-  /* Translucent material for floating chrome (theme toggle, dropdown) —
-     a light layer over content, blurred so it reads as real glass. Solid
-     fallback comes first for engines without backdrop-filter and for the
-     prefers-reduced-transparency path below. */
-  --color-glass: rgba(255, 255, 255, 0.72);
-  --color-glass-border: rgba(255, 255, 255, 0.5);
+  /* Text */
+  --text: #e9eef5;
+  --muted: #8b98ac;
+  --faint: #5c6a7e;
 
-  /* Typography — self-contained system stacks (no web fonts / CDNs).
-     A serif display face gives the editorial-finance voice; a tabular
-     sans carries every number so figures stay aligned. */
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
-    "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
-  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua",
-    Georgia, Cambria, "Times New Roman", Times, serif;
+  /* Lines */
+  --border: #1e2836;
+  --border-strong: #2b3849;
 
-  /* Focus ring — solid fallback first, richer tint layered on top. */
-  --color-focus-ring: rgba(31, 95, 79, 0.28);
+  /* Accent = the chart's own primary line (#34d399), so UI + chart cohere */
+  --accent: #34d399;
+  --accent-bright: #5ee7ad;
+  --accent-dim: #1f8f68;
+  --accent-ink: #032015; /* text sitting on a solid accent fill */
+  --accent-soft: rgba(52, 211, 153, 0.12);
+  --accent-glow: rgba(52, 211, 153, 0.28);
+
+  /* "Payoff" pop — acid lime from direction C. The loud, viral half of the
+     palette, spent only on the two hero moments (Calculate CTA, the gain
+     number) plus small brand marks. Emerald above stays the calm data layer.
+     Used as a fill with dark ink, or as text only on a dark ground. */
+  --pop: #eafe4b;
+  --pop-bright: #f3ff6b;
+  --pop-dim: #c3d62a;
+  --pop-ink: #12180a; /* near-black, faint green bias — text on a lime fill */
+  --pop-glow: rgba(234, 254, 75, 0.34);
+  --headline-gain: var(--pop); /* the win number screams lime on the dark shell */
+
+  /* Semantic gain / loss (gain intentionally == accent; loss is its own hue) */
+  --gain: #34d399;
+  --gain-soft: rgba(52, 211, 153, 0.12);
+  --loss: #ff6b6b;
+  --loss-soft: rgba(255, 107, 107, 0.12);
+
+  /* Danger / error */
+  --danger-bg: rgba(255, 107, 107, 0.1);
+  --danger-text: #ffb0b0;
+  --danger-border: rgba(255, 107, 107, 0.32);
+
+  /* Focus ring */
+  --focus: rgba(52, 211, 153, 0.45);
+
+  /* Typography — mono for data/labels (Signal credibility),
+     system sans for prose and the big Payoff number. No serif. */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", "Cascadia Mono",
+    "Roboto Mono", Menlo, Consolas, "Liberation Mono", monospace;
 
   /* Spacing scale */
   --space-1: 0.25rem;
@@ -55,89 +77,123 @@
   --space-8: 4rem;
 
   /* Radii */
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-pill: 999px;
 
-  /* Shadow */
-  --shadow-card: 0 1px 2px rgba(20, 20, 20, 0.04), 0 12px 32px -16px rgba(20, 20, 20, 0.16);
+  /* Shadows — real offset + soft blur, tuned for a dark ground */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 2px 6px rgba(0, 0, 0, 0.35), 0 20px 44px -22px rgba(0, 0, 0, 0.8);
+  --shadow-pop: 0 30px 70px -34px rgba(0, 0, 0, 0.9);
 
   /* Layout */
-  --container-max: 640px;
+  --container: 680px;
 }
 
-/* Dark palette, defined once and applied in two situations:
-   (1) the system asks for dark AND the user hasn't forced light, and
-   (2) the user explicitly forced dark via the toggle.
-   Both selectors carry the same declarations — CSS has no way to share a
-   token block across a media query and a bare selector, so it is written
-   twice on purpose. Keep the two blocks in sync. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
+/* ---- LIGHT override (system prefers light, and no explicit dark choice) ---- */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
 
-    --color-bg: #14161a;
-    --color-surface: #1c1f24;
-    --color-text: #f0efec;
-    --color-muted: #93989f;
-    --color-border: #2c3038;
-    --color-accent: #4fb894;
-    --color-accent-hover: #63c9a6;
-    --color-accent-contrast: #0b1210;
-    --color-gain: #48c78e;
-    --color-gain-bg: rgba(72, 199, 142, 0.12);
-    --color-loss: #e5695b;
-    --color-loss-bg: rgba(229, 105, 91, 0.12);
-    --color-danger-bg: rgba(229, 105, 91, 0.1);
-    --color-danger-text: #f0a99e;
-    --color-danger-border: rgba(229, 105, 91, 0.3);
+    --bg: #eef1f5;
+    --bg-grid: rgba(20, 40, 70, 0.045);
+    --surface: #ffffff;
+    --surface-2: #f4f6f9;
+    --surface-3: #eaeef3;
 
-    --color-glass: rgba(28, 31, 36, 0.72);
-    --color-glass-border: rgba(255, 255, 255, 0.08);
+    --text: #0d1520;
+    --muted: #55637a;
+    --faint: #8391a5;
 
-    --color-focus-ring: rgba(79, 184, 148, 0.32);
+    --border: #e0e5ec;
+    --border-strong: #ccd4de;
 
-    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 40px -20px rgba(0, 0, 0, 0.6);
+    --accent: #0e9e6a;
+    --accent-bright: #12b87c;
+    --accent-dim: #0b8659;
+    --accent-ink: #ffffff;
+    --accent-soft: rgba(14, 158, 106, 0.1);
+    --accent-glow: rgba(14, 158, 106, 0.22);
+
+    --pop: #dff23a; /* a touch deeper so the lime fill has presence on white */
+    --pop-bright: #eafe4b;
+    --pop-dim: #b4c422;
+    --pop-ink: #12180a;
+    --pop-glow: rgba(198, 220, 20, 0.4);
+    --headline-gain: var(--gain); /* lime text is illegible on white — emerald instead */
+
+    --gain: #0e9e6a;
+    --gain-soft: rgba(14, 158, 106, 0.1);
+    --loss: #d64242;
+    --loss-soft: rgba(214, 66, 66, 0.1);
+
+    --danger-bg: rgba(214, 66, 66, 0.08);
+    --danger-text: #8f2020;
+    --danger-border: rgba(214, 66, 66, 0.28);
+
+    --focus: rgba(14, 158, 106, 0.4);
+
+    --shadow-1: 0 1px 2px rgba(20, 30, 45, 0.06);
+    --shadow-2: 0 1px 2px rgba(20, 30, 45, 0.05), 0 18px 40px -22px rgba(20, 30, 45, 0.28);
+    --shadow-pop: 0 26px 60px -30px rgba(20, 30, 45, 0.4);
   }
 }
 
-:root[data-theme="dark"] {
-  color-scheme: dark;
-
-  --color-bg: #14161a;
-  --color-surface: #1c1f24;
-  --color-text: #f0efec;
-  --color-muted: #93989f;
-  --color-border: #2c3038;
-  --color-accent: #4fb894;
-  --color-accent-hover: #63c9a6;
-  --color-accent-contrast: #0b1210;
-  --color-gain: #48c78e;
-  --color-gain-bg: rgba(72, 199, 142, 0.12);
-  --color-loss: #e5695b;
-  --color-loss-bg: rgba(229, 105, 91, 0.12);
-  --color-danger-bg: rgba(229, 105, 91, 0.1);
-  --color-danger-text: #f0a99e;
-  --color-danger-border: rgba(229, 105, 91, 0.3);
-
-  --color-glass: rgba(28, 31, 36, 0.72);
-  --color-glass-border: rgba(255, 255, 255, 0.08);
-
-  --color-focus-ring: rgba(79, 184, 148, 0.32);
-
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 40px -20px rgba(0, 0, 0, 0.6);
-}
-
-/* Forced light must win even when the OS is in dark mode: color-scheme is
-   re-stated so native controls stay light too. Token values already come
-   from the base :root, so only the scheme needs asserting here. */
+/* ---- Explicit LIGHT choice must win even on a dark OS ---- */
 :root[data-theme="light"] {
   color-scheme: light;
+
+  --bg: #eef1f5;
+  --bg-grid: rgba(20, 40, 70, 0.045);
+  --surface: #ffffff;
+  --surface-2: #f4f6f9;
+  --surface-3: #eaeef3;
+
+  --text: #0d1520;
+  --muted: #55637a;
+  --faint: #8391a5;
+
+  --border: #e0e5ec;
+  --border-strong: #ccd4de;
+
+  --accent: #0e9e6a;
+  --accent-bright: #12b87c;
+  --accent-dim: #0b8659;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(14, 158, 106, 0.1);
+  --accent-glow: rgba(14, 158, 106, 0.22);
+
+  --pop: #dff23a;
+  --pop-bright: #eafe4b;
+  --pop-dim: #b4c422;
+  --pop-ink: #12180a;
+  --pop-glow: rgba(198, 220, 20, 0.4);
+  --headline-gain: var(--gain);
+
+  --gain: #0e9e6a;
+  --gain-soft: rgba(14, 158, 106, 0.1);
+  --loss: #d64242;
+  --loss-soft: rgba(214, 66, 66, 0.1);
+
+  --danger-bg: rgba(214, 66, 66, 0.08);
+  --danger-text: #8f2020;
+  --danger-border: rgba(214, 66, 66, 0.28);
+
+  --focus: rgba(14, 158, 106, 0.4);
+
+  --shadow-1: 0 1px 2px rgba(20, 30, 45, 0.06);
+  --shadow-2: 0 1px 2px rgba(20, 30, 45, 0.05), 0 18px 40px -22px rgba(20, 30, 45, 0.28);
+  --shadow-pop: 0 26px 60px -30px rgba(20, 30, 45, 0.4);
 }
 
-/* Theme-switch cross-fade. JS adds .theme-transition to <html> for the
-   duration of a toggle, so only the deliberate light<->dark change eases;
-   ordinary interactions keep their own (faster) transitions. */
+/* ---- Explicit DARK choice must win even on a light OS. Tokens already come
+   from the bare :root (dark), so only the native scheme needs asserting. ---- */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Deliberate light<->dark cross-fade (JS adds .theme-transition briefly). */
 :root.theme-transition,
 :root.theme-transition *,
 :root.theme-transition *::before,
@@ -171,11 +227,17 @@ html {
 
 body {
   margin: 0;
-  background: var(--color-bg);
-  color: var(--color-text);
+  background-color: var(--bg);
+  /* A soft accent aura anchored top-center gives the ground depth and pulls the
+     eye toward the headline. Token-driven so it re-themes with light/dark. */
+  background-image:
+    radial-gradient(130% 90% at 50% -10%, var(--accent-soft) 0%, transparent 58%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: var(--text);
   font-family: var(--font-sans);
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -222,7 +284,7 @@ ul {
 }
 
 /* ==========================================================================
-   Theme toggle — floating glass control (system / light / dark)
+   Theme toggle — floating control
    ========================================================================== */
 
 .theme-toggle {
@@ -236,70 +298,47 @@ ul {
   width: 2.5rem;
   height: 2.5rem;
   padding: 0;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border-strong);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+  color: var(--muted);
   cursor: pointer;
-  color: var(--color-text);
-  /* Solid fallback first; the translucent material + blur layer on top for
-     engines that support backdrop-filter (progressive enhancement). */
-  background: var(--color-surface);
-  background: var(--color-glass);
-  border: 1px solid var(--color-border);
-  border-color: var(--color-glass-border);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  backdrop-filter: blur(16px) saturate(180%);
-  box-shadow: 0 1px 2px rgba(20, 20, 20, 0.06), 0 8px 24px -12px rgba(20, 20, 20, 0.28);
-  /* Springy settle on press-release; cheap compositor-only properties. */
-  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1), color 140ms ease;
+  box-shadow: var(--shadow-1);
+  transition: color 140ms ease, border-color 140ms ease, transform 140ms ease;
 }
 
 .theme-toggle:hover {
-  color: var(--color-accent);
-  box-shadow: 0 1px 2px rgba(20, 20, 20, 0.08), 0 12px 30px -12px rgba(20, 20, 20, 0.38);
+  color: var(--accent);
+  border-color: var(--accent-dim);
 }
 
-/* Feedback on the press itself (§Response), not on release. */
 .theme-toggle:active {
-  transform: scale(0.92);
+  transform: scale(0.94);
 }
 
 .theme-toggle svg {
-  display: block;
-  width: 1.125rem;
-  height: 1.125rem;
+  width: 1.15rem;
+  height: 1.15rem;
 }
 
-/* The active icon is chosen purely by the html[data-theme] state, so it is
-   correct on first paint (the inline head script sets data-theme before the
-   body renders) with no JavaScript and no flash. */
+/* Show only the icon matching the current resolved theme. */
 .theme-toggle .icon {
   display: none;
 }
-
-:root:not([data-theme]) .theme-toggle .icon-system {
-  display: block;
-}
-
-:root[data-theme="light"] .theme-toggle .icon-light {
-  display: block;
-}
-
-:root[data-theme="dark"] .theme-toggle .icon-dark {
-  display: block;
-}
+:root:not([data-theme]) .theme-toggle .icon-system { display: block; }
+:root[data-theme="light"] .theme-toggle .icon-light { display: block; }
+:root[data-theme="dark"] .theme-toggle .icon-dark { display: block; }
 
 /* ==========================================================================
    Layout
    ========================================================================== */
 
 .page {
-  max-width: var(--container-max);
+  max-width: var(--container);
   margin: 0 auto;
-  padding: clamp(1.5rem, 5vw, 4rem) clamp(1.25rem, 4vw, 1.5rem);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
-  min-height: 100vh;
+  padding: clamp(2rem, 6vw, 4rem) clamp(1.1rem, 5vw, 2rem) 4rem;
 }
 
 main {
@@ -313,546 +352,62 @@ main {
    ========================================================================== */
 
 .site-header {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-3);
+  margin-bottom: var(--space-6);
 }
 
 .eyebrow {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--color-accent);
+  color: var(--accent);
+  margin-bottom: var(--space-4);
+}
+
+.eyebrow::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--pop);
+  box-shadow: 0 0 0 0 var(--pop-glow);
+  animation: pulse 2.4s ease-out infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 var(--pop-glow); }
+  70% { box-shadow: 0 0 0 7px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eyebrow::before { animation: none; }
 }
 
 .site-title {
-  font-family: var(--font-serif);
-  font-size: clamp(1.875rem, 5.5vw, 2.75rem);
-  font-weight: 600;
-  letter-spacing: -0.015em;
-  line-height: 1.12;
-  max-width: 18ch;
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: clamp(2rem, 6vw, 3.1rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
   text-wrap: balance;
+  color: var(--text);
+  max-width: 16ch;
+}
+
+.site-title em {
+  font-style: normal;
+  color: var(--accent);
 }
 
 .site-subtitle {
-  color: var(--color-muted);
-  font-size: 1.0625rem;
-  line-height: 1.55;
-  max-width: 44ch;
-  margin: 0 auto;
-  text-wrap: balance;
-}
-
-/* ==========================================================================
-   Card / form
-   ========================================================================== */
-
-.card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  padding: clamp(1.25rem, 4vw, var(--space-6));
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-/* The form is the sole flex child of .card; it re-applies the same
-   flex column + gap so its own children (fields, button) lay out
-   exactly as they did before they were wrapped in a <form>. */
-#calculator-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  position: relative;
-}
-
-.field-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: var(--space-4);
-}
-
-.field-currency {
-  min-width: 7rem;
-}
-
-label {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--color-muted);
-}
-
-input[type="text"],
-input[type="number"],
-input[type="date"],
-select {
-  appearance: none;
-  width: 100%;
-  padding: 0.75rem 0.875rem;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  color: var(--color-text);
-  transition: border-color 120ms ease, box-shadow 120ms ease;
-}
-
-select {
-  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
-    linear-gradient(135deg, currentColor 50%, transparent 50%);
-  background-position: calc(100% - 1.1rem) center, calc(100% - 0.75rem) center;
-  background-size: 6px 6px, 6px 6px;
-  background-repeat: no-repeat;
-  color: var(--color-text);
-  padding-right: 2rem;
-}
-
-input:hover:not(:focus-visible),
-select:hover:not(:focus-visible) {
-  border-color: var(--color-muted);
-}
-
-input:focus-visible,
-select:focus-visible,
-button:focus-visible {
-  outline: none;
-  border-color: var(--color-accent);
-  /* Fallback ring for engines without color-mix; the tinted ring below
-     progressively enhances it. */
-  box-shadow: 0 0 0 3px var(--color-focus-ring);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 25%, transparent);
-}
-
-.btn-primary {
-  appearance: none;
-  border: none;
-  border-radius: var(--radius-md);
-  padding: 0.9375rem 1.5rem;
-  margin-top: var(--space-2);
-  background: var(--color-accent);
-  color: var(--color-accent-contrast);
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  cursor: pointer;
-  box-shadow: 0 1px 2px rgba(20, 40, 33, 0.12), 0 8px 20px -12px rgba(20, 60, 48, 0.5);
-  transition: background-color 140ms ease, transform 120ms ease, box-shadow 140ms ease;
-}
-
-.btn-primary:hover {
-  background: var(--color-accent-hover, var(--color-accent));
-  box-shadow: 0 1px 2px rgba(20, 40, 33, 0.14), 0 12px 28px -12px rgba(20, 60, 48, 0.6);
-  transform: translateY(-1px);
-}
-
-.btn-primary:active {
-  transform: translateY(1px);
-  box-shadow: 0 1px 2px rgba(20, 40, 33, 0.14);
-}
-
-/* ==========================================================================
-   Ticker suggestions dropdown
-   ========================================================================== */
-
-.combobox {
-  position: relative;
-}
-
-.suggestions {
-  position: absolute;
-  top: calc(100% + var(--space-2));
-  left: 0;
-  right: 0;
-  z-index: 10;
-  max-height: 15rem;
-  overflow-y: auto;
-  /* Solid fallback, then a translucent-glass layer so the dropdown reads as
-     a floating material above the form (§Materials). */
-  background: var(--color-surface);
-  background: var(--color-glass);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
-  padding: var(--space-2);
-}
-
-.suggestions li {
-  padding: 0.625rem 0.75rem;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-3);
-  font-size: 0.9375rem;
-}
-
-.suggestions li:hover,
-.suggestions li[aria-selected="true"] {
-  background: var(--color-bg);
-}
-
-.suggestions .suggestion-symbol {
-  font-weight: 600;
-}
-
-.suggestions .suggestion-meta {
-  color: var(--color-muted);
-  font-size: 0.8125rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* ==========================================================================
-   Loading / skeleton
-   ========================================================================== */
-
-.loading {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-}
-
-.skeleton {
-  border-radius: var(--radius-sm);
-  /* Fallback: flat border tone for engines without color-mix. */
-  background: var(--color-border);
-  background: linear-gradient(
-    90deg,
-    var(--color-border) 25%,
-    color-mix(in srgb, var(--color-border) 50%, var(--color-surface)) 37%,
-    var(--color-border) 63%
-  );
-  background-size: 400% 100%;
-  animation: skeleton-shimmer 1.6s ease-in-out infinite;
-}
-
-.skeleton-headline {
-  height: 2.5rem;
-  width: 60%;
-}
-
-.skeleton-line {
-  height: 1rem;
-  width: 90%;
-}
-
-.skeleton-line-short {
-  width: 45%;
-}
-
-.skeleton-chart {
-  height: 10rem;
-  width: 100%;
-  margin-top: var(--space-2);
-}
-
-@keyframes skeleton-shimmer {
-  0% {
-    background-position: 100% 0;
-  }
-  100% {
-    background-position: 0 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .skeleton {
-    animation: none;
-  }
-}
-
-/* ==========================================================================
-   Notice / error states
-   ========================================================================== */
-
-.notice,
-.error {
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-  font-size: 0.9375rem;
-  border: 1px solid var(--color-border);
-}
-
-.notice {
-  background: var(--color-bg);
-  color: var(--color-muted);
-  border-color: var(--color-border);
-}
-
-.error {
-  background: var(--color-danger-bg);
-  color: var(--color-danger-text);
-  border-color: var(--color-danger-border);
-}
-
-/* ==========================================================================
-   Result
-   ========================================================================== */
-
-.result {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  padding: clamp(1.5rem, 4vw, var(--space-7)) clamp(1.25rem, 4vw, var(--space-6));
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-  text-align: center;
-}
-
-/* Single authored moment: the result rises into view as the number counts
-   up and the chart draws in. */
-.result:not(.hidden) {
-  animation: result-reveal 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes result-reveal {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .result:not(.hidden) {
-    animation: none;
-  }
-}
-
-.result-eyebrow {
-  font-size: 1rem;
-  font-weight: 400;
-  color: var(--color-muted);
-}
-
-.headline {
-  font-size: clamp(2.75rem, 9vw, 4.25rem);
-  font-weight: 700;
-  letter-spacing: -0.035em;
-  line-height: 1.02;
-  font-variant-numeric: tabular-nums;
-  margin-top: calc(-1 * var(--space-2));
-}
-
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-4);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--color-border);
-}
-
-.stat {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.stat-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--color-muted);
-}
-
-.stat-value {
-  font-size: 1.375rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  font-variant-numeric: tabular-nums;
-}
-
-.is-gain {
-  color: var(--color-gain);
-}
-
-.is-loss {
-  color: var(--color-loss);
-}
-
-.summary {
-  color: var(--color-muted);
-  font-size: 0.9375rem;
-  line-height: 1.65;
-  max-width: 52ch;
-  margin: 0 auto;
-  text-wrap: pretty;
-}
-
-.chart {
-  width: 100%;
-  min-height: 12rem;
-  text-align: left;
-}
-
-.chart svg {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.chart-line {
-  fill: none;
-  stroke: var(--color-accent);
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.chart-baseline {
-  stroke: var(--color-border);
-  stroke-width: 1;
-}
-
-.chart-guide {
-  stroke: var(--color-muted);
-  stroke-width: 1;
-  stroke-dasharray: 3 3;
-  transition: opacity 120ms ease;
-}
-
-.chart-dot {
-  fill: var(--color-accent);
-  stroke: var(--color-surface);
-  stroke-width: 2;
-  transition: opacity 120ms ease;
-}
-
-.chart-overlay {
-  fill: transparent;
-  cursor: crosshair;
-  touch-action: pan-y;
-}
-
-.chart-tooltip {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 2;
-  pointer-events: none;
-  transform: translate(-50%, -100%);
-  margin-top: -0.625rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-card);
-  padding: 0.375rem 0.625rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--color-text);
-  white-space: nowrap;
-}
-
-/* Multi-series tooltip content: a date heading plus one swatch/label/value
-   row per series (single-series tooltips stay plain text, set above). */
-.chart-tooltip-date {
-  font-weight: 700;
-  margin-bottom: 0.25rem;
-}
-
-.chart-tooltip-row {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  white-space: nowrap;
-}
-
-.chart-tooltip-row + .chart-tooltip-row {
-  margin-top: 0.125rem;
-}
-
-.chart-tooltip-swatch {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  flex: none;
-}
-
-.chart-tooltip-label {
-  font-weight: 600;
-}
-
-.chart-tooltip-value {
-  margin-left: auto;
-  padding-left: 0.75rem;
-}
-
-.chart-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1.25rem;
-  margin-top: 0.75rem;
-  font-size: 0.8125rem;
-}
-
-.chart-legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-}
-
-.chart-legend-swatch {
-  width: 0.625rem;
-  height: 0.625rem;
-  border-radius: 50%;
-  flex: none;
-}
-
-.chart-legend-label {
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-/* ==========================================================================
-   Secondary button (shared by add-compare, share-bar actions)
-   ========================================================================== */
-
-.btn-secondary {
-  appearance: none;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: 0.625rem 1.125rem;
-  background: var(--color-surface);
-  color: var(--color-text);
-  font-size: 0.875rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  cursor: pointer;
-  transition: border-color 120ms ease, background-color 120ms ease, transform 120ms ease;
-}
-
-.btn-secondary:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-}
-
-.btn-secondary:active {
-  transform: translateY(1px);
+  margin-top: var(--space-4);
+  color: var(--muted);
+  font-size: clamp(1rem, 2.4vw, 1.12rem);
+  max-width: 46ch;
 }
 
 /* ==========================================================================
@@ -862,13 +417,15 @@ button:focus-visible {
 .presets {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .presets-label {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
 }
 
 .presets-row {
@@ -878,21 +435,23 @@ button:focus-visible {
 }
 
 .preset-chip {
-  appearance: none;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  padding: 0.5rem 1rem;
-  background: var(--color-surface);
-  color: var(--color-text);
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  padding: 0.42rem 0.85rem;
   cursor: pointer;
-  transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease, transform 120ms ease;
+  transition: border-color 140ms ease, color 140ms ease,
+    background-color 140ms ease, transform 140ms ease;
 }
 
 .preset-chip:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
+  border-color: var(--accent-dim);
+  color: var(--accent-bright);
+  background: var(--accent-soft);
 }
 
 .preset-chip:active {
@@ -900,7 +459,213 @@ button:focus-visible {
 }
 
 /* ==========================================================================
-   Compare block (inside the form)
+   Card + form
+   ========================================================================== */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: clamp(1.3rem, 4vw, 1.9rem);
+  box-shadow: var(--shadow-2);
+}
+
+#calculator-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.field label,
+.compare-block-label,
+.checkbox-field > span {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 9rem;
+  gap: var(--space-4);
+}
+
+.field-currency {
+  min-width: 0;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select {
+  width: 100%;
+  padding: 0.72rem 0.85rem;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
+}
+
+input::placeholder {
+  color: var(--faint);
+}
+
+/* Numeric/data inputs read as data — mono, tabular */
+#amount-input,
+#ticker-input,
+input[type="date"],
+.compare-row-input {
+  font-family: var(--font-mono);
+  letter-spacing: 0.01em;
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 55%, calc(100% - 13px) 55%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 2rem;
+  cursor: pointer;
+}
+
+input:hover:not(:focus-visible),
+select:hover:not(:focus-visible) {
+  border-color: var(--muted);
+}
+
+input:focus-visible,
+select:focus-visible,
+button:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus);
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+.btn-primary {
+  appearance: none;
+  border: none;
+  border-radius: var(--r-sm);
+  background: var(--pop);
+  color: var(--pop-ink);
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.9rem 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 8px 26px -10px var(--pop-glow);
+  transition: background-color 140ms ease, transform 120ms ease, box-shadow 140ms ease;
+}
+
+.btn-primary:hover {
+  background: var(--pop-bright);
+  box-shadow: 0 12px 32px -10px var(--pop-glow);
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+  box-shadow: 0 6px 18px -10px var(--pop-glow);
+}
+
+.btn-secondary {
+  appearance: none;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  padding: 0.62rem 1rem;
+  cursor: pointer;
+  transition: border-color 140ms ease, color 140ms ease,
+    background-color 140ms ease, transform 120ms ease;
+}
+
+.btn-secondary:hover {
+  border-color: var(--accent-dim);
+  color: var(--accent-bright);
+}
+
+.btn-secondary:active {
+  transform: translateY(1px);
+}
+
+/* ==========================================================================
+   Combobox + suggestions
+   ========================================================================== */
+
+.combobox {
+  position: relative;
+}
+
+.suggestions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 40;
+  background: var(--surface-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-pop);
+  overflow: hidden;
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+.suggestions li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.6rem 0.85rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+
+.suggestions li:last-child {
+  border-bottom: none;
+}
+
+.suggestions li:hover,
+.suggestions li[aria-selected="true"] {
+  background: var(--accent-soft);
+}
+
+.suggestions .suggestion-symbol {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+.suggestions .suggestion-meta {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* ==========================================================================
+   Compare block
    ========================================================================== */
 
 .compare-block {
@@ -908,31 +673,34 @@ button:focus-visible {
   flex-direction: column;
   gap: var(--space-3);
   padding: var(--space-4);
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--surface-2) 60%, transparent);
 }
 
 .compare-block-label {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--color-muted);
+  margin-bottom: 0.1rem;
 }
 
 .checkbox-field {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  font-size: 0.9375rem;
-  font-weight: 400;
-  color: var(--color-text);
+  gap: 0.6rem;
   cursor: pointer;
 }
 
+.checkbox-field > span {
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+}
+
 .checkbox-field input[type="checkbox"] {
-  width: 1.125rem;
-  height: 1.125rem;
-  accent-color: var(--color-accent);
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--accent);
   cursor: pointer;
 }
 
@@ -946,77 +714,403 @@ button:focus-visible {
   display: none;
 }
 
-/* Added-ticker rows are inserted by JS (Task 6) as
-   `.compare-row` > (label text + `.compare-row-remove` button). */
 .compare-row {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: 0.5rem 0.75rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: 0.875rem;
-  font-weight: 600;
 }
 
-/* Let the ticker input fill the row so the remove control sits directly
-   beside it instead of floating at the far edge with a wide dead gap. */
 .compare-row .combobox {
   flex: 1;
-  min-width: 0;
 }
 
 .compare-row-remove {
-  appearance: none;
-  border: none;
-  background: transparent;
-  color: var(--color-muted);
-  font-size: 1rem;
+  flex-shrink: 0;
+  width: 2.1rem;
+  height: 2.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 1.15rem;
   line-height: 1;
   cursor: pointer;
-  padding: 0.125rem 0.375rem;
-  border-radius: var(--radius-sm);
-  transition: color 120ms ease, background-color 120ms ease;
+  transition: color 140ms ease, border-color 140ms ease;
 }
 
 .compare-row-remove:hover {
-  color: var(--color-loss);
-  background: var(--color-loss-bg);
+  color: var(--loss);
+  border-color: var(--loss);
 }
 
 .btn-add-compare {
   align-self: flex-start;
 }
 
+.compare-cap-hint {
+  font-family: var(--font-mono);
+  font-size: 0.72rem !important;
+  color: var(--faint) !important;
+}
+
 /* ==========================================================================
-   Verdict / regret
+   Loading skeleton
+   ========================================================================== */
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: clamp(1.3rem, 4vw, 1.9rem);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-2);
+  border-radius: var(--r-sm);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, var(--accent-soft), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after { animation: none; }
+}
+
+.skeleton-headline { height: 3rem; width: 62%; }
+.skeleton-line { height: 1rem; width: 100%; }
+.skeleton-line-short { width: 45%; }
+.skeleton-chart { height: 10rem; margin-top: var(--space-3); }
+
+/* ==========================================================================
+   Notices & errors
+   ========================================================================== */
+
+.notice,
+.error {
+  padding: 0.85rem 1rem;
+  border-radius: var(--r-md);
+  font-size: 0.9rem;
+  border: 1px solid transparent;
+}
+
+.notice {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--muted);
+}
+
+.error {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+  color: var(--danger-text);
+}
+
+/* ==========================================================================
+   Result — the "Payoff" moment
+   ========================================================================== */
+
+.result {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: clamp(1.5rem, 5vw, 2.4rem);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(120% 90% at 50% 0%, var(--accent-soft) 0%, transparent 60%),
+    var(--surface);
+  box-shadow: var(--shadow-pop);
+  overflow: hidden;
+}
+
+/* A thin accent seam across the very top of the payoff panel. */
+.result::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--pop), transparent);
+}
+
+.result.is-loss::before {
+  background: linear-gradient(90deg, transparent, var(--loss), transparent);
+}
+
+.result:not(.hidden) {
+  animation: result-in 520ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes result-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .result:not(.hidden) { animation: none; }
+}
+
+.result-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* The hero number. Bright by default; tinted by gain/loss when JS marks the
+   result. Tabular so a live count-up doesn't jitter the width. */
+.headline {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: clamp(2.9rem, 12vw, 5.25rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  margin-top: 0.35rem;
+  word-break: break-word;
+}
+
+.result.is-gain .headline { color: var(--headline-gain); }
+.result.is-loss .headline { color: var(--loss); }
+
+.breakdown {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* Stat readout — a single terminal-style row, not three equal cards. */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  overflow: hidden;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.9rem 1rem;
+  border-left: 1px solid var(--border);
+}
+
+.stat:first-child {
+  border-left: none;
+}
+
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: clamp(1.05rem, 3.5vw, 1.35rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.is-gain { color: var(--gain); }
+.is-loss { color: var(--loss); }
+
+.summary {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* ==========================================================================
+   Chart
+   ========================================================================== */
+
+.chart {
+  position: relative;
+  width: 100%;
+  padding: var(--space-4) var(--space-3) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background:
+    linear-gradient(var(--border) 1px, transparent 1px) 0 0 / 100% 25% ,
+    var(--surface-2);
+  background-repeat: repeat-y;
+}
+
+.chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.chart-line {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 3px 8px var(--accent-glow));
+}
+
+.chart-baseline {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+
+.chart-guide {
+  stroke: var(--muted);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.chart-dot {
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+
+.chart-overlay {
+  fill: transparent;
+  cursor: crosshair;
+}
+
+.chart-tooltip {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  background: var(--surface-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  box-shadow: var(--shadow-pop);
+  padding: 0.5rem 0.65rem;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.chart-tooltip-date {
+  font-size: 0.68rem;
+  color: var(--faint);
+  margin-bottom: 0.35rem;
+}
+
+.chart-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.chart-tooltip-row + .chart-tooltip-row {
+  margin-top: 0.2rem;
+}
+
+.chart-tooltip-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.chart-tooltip-label {
+  color: var(--muted);
+  margin-right: auto;
+}
+
+.chart-tooltip-value {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+.chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.chart-legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.chart-legend-label {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+/* ==========================================================================
+   Verdict + regret
    ========================================================================== */
 
 .verdict {
-  font-size: 1.0625rem;
-  font-weight: 600;
-  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: clamp(1.05rem, 3vw, 1.25rem);
+  letter-spacing: -0.01em;
+  color: var(--text);
 }
 
-/* Beating / lagging the benchmark carries the same semantic color as the
-   profit and return stats. Scoped so it wins over the neutral default
-   despite `.is-gain`/`.is-loss` appearing earlier in the source. */
-.verdict.is-gain {
-  color: var(--color-gain);
-}
-
-.verdict.is-loss {
-  color: var(--color-loss);
-}
+.verdict.is-gain { color: var(--gain); }
+.verdict.is-loss { color: var(--loss); }
 
 .regret {
-  color: var(--color-muted);
-  font-size: 0.9375rem;
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--r-md);
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
+  font-size: 0.92rem;
   line-height: 1.55;
-  max-width: 52ch;
-  margin: 0 auto;
-  text-wrap: pretty;
+  color: var(--text);
+}
+
+.regret::before {
+  content: "◆";
+  color: var(--accent);
+  flex-shrink: 0;
 }
 
 /* ==========================================================================
@@ -1029,37 +1123,49 @@ button:focus-visible {
 
 .ranked-results {
   overflow-x: auto;
-  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
 }
 
-/* Filled by JS (Task 6/7) as `table.ranked-table`, with the top
-   performer's row carrying `.rank-1`. */
 .ranked-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.875rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
 }
 
 .ranked-table th,
 .ranked-table td {
-  padding: 0.625rem 0.75rem;
-  border-bottom: 1px solid var(--color-border);
-  font-variant-numeric: tabular-nums;
+  padding: 0.7rem 0.85rem;
   text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  border-bottom: 1px solid var(--border);
 }
 
 .ranked-table th:first-child,
-.ranked-table td:first-child {
+.ranked-table td:first-child,
+.ranked-table th:nth-child(2),
+.ranked-table td:nth-child(2) {
   text-align: left;
-  font-variant-numeric: normal;
 }
 
 .ranked-table th {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-size: 0.64rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--color-muted);
+  color: var(--faint);
+  font-weight: 500;
+  background: var(--surface-2);
+}
+
+.ranked-table tbody td {
+  color: var(--muted);
+}
+
+.ranked-table tbody td:nth-child(2) {
+  color: var(--text);
+  font-weight: 600;
 }
 
 .ranked-table tr:last-child td {
@@ -1067,10 +1173,12 @@ button:focus-visible {
 }
 
 .ranked-table tr.rank-1 td {
-  /* Fallback: flat accent tint for engines without color-mix. */
-  background: var(--color-gain-bg);
-  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-gain-bg));
-  font-weight: 700;
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.ranked-table tr.rank-1 td:first-child {
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 
 /* ==========================================================================
@@ -1079,9 +1187,14 @@ button:focus-visible {
 
 .share-bar {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
   gap: var(--space-3);
+}
+
+.share-bar .btn-secondary {
+  flex: 1;
+  text-align: center;
+  padding: 0.8rem 1rem;
+  font-size: 0.85rem;
 }
 
 /* ==========================================================================
@@ -1091,46 +1204,30 @@ button:focus-visible {
 .toast {
   position: fixed;
   left: 50%;
-  bottom: var(--space-6);
+  bottom: max(1.5rem, env(safe-area-inset-bottom));
   transform: translateX(-50%);
   z-index: 100;
-  max-width: calc(100vw - 2 * var(--space-5));
-  background: var(--color-text);
-  color: var(--color-bg);
-  border-radius: var(--radius-md);
-  padding: 0.75rem 1.25rem;
-  font-size: 0.875rem;
+  background: var(--pop);
+  color: var(--pop-ink);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
   font-weight: 600;
-  box-shadow: var(--shadow-card);
-  text-align: center;
+  padding: 0.7rem 1.1rem;
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow-pop);
 }
 
-/* `.hidden` (display:none) governs mount state; JS toggles `.hidden` to
-   show/hide the toast, and `.toast:not(.hidden)` drives the fade animation. */
 .toast:not(.hidden) {
-  animation: toast-fade 2.4s ease-in-out both;
+  animation: toast-in 200ms ease-out;
 }
 
-@keyframes toast-fade {
-  0% {
-    opacity: 0;
-    transform: translateX(-50%) translateY(8px);
-  }
-  10%,
-  85% {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(-50%) translateY(8px);
-  }
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .toast:not(.hidden) {
-    animation: none;
-  }
+  .toast:not(.hidden) { animation: none; }
 }
 
 /* ==========================================================================
@@ -1138,16 +1235,17 @@ button:focus-visible {
    ========================================================================== */
 
 .disclaimer {
+  margin-top: var(--space-6);
   text-align: center;
-  color: var(--color-muted);
-  font-size: 0.8125rem;
+  color: var(--faint);
+  font-size: 0.8rem;
   line-height: 1.6;
   padding-top: var(--space-4);
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--border);
 }
 
 .disclaimer strong {
-  color: var(--color-text);
+  color: var(--muted);
 }
 
 /* ==========================================================================
@@ -1165,24 +1263,28 @@ button:focus-visible {
 
   .stat-grid {
     grid-template-columns: 1fr;
-    gap: var(--space-3);
+  }
+
+  .stat {
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+
+  .stat:first-child {
+    border-top: none;
   }
 
   .share-bar {
     flex-direction: column;
   }
 
-  .share-bar .btn-secondary {
-    width: 100%;
-  }
-
   .ranked-table {
-    font-size: 0.8125rem;
+    font-size: 0.78rem;
   }
 
   .ranked-table th,
   .ranked-table td {
-    padding: 0.5rem 0.5rem;
+    padding: 0.55rem 0.6rem;
   }
 }
 
@@ -1190,27 +1292,19 @@ button:focus-visible {
    Accessibility — transparency & contrast preferences
    ========================================================================== */
 
-/* When the user asks for reduced transparency, drop the blur and make the
-   glass surfaces fully solid so text never sits over a busy backdrop. */
 @media (prefers-reduced-transparency: reduce) {
   .theme-toggle,
   .suggestions {
-    background: var(--color-surface);
+    background: var(--surface-3);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
-
-  .theme-toggle {
-    border-color: var(--color-border);
-  }
 }
 
-/* Higher-contrast preference: near-solid surfaces with defined, contrasting
-   borders, and a stronger focus ring so structure stays legible. */
 @media (prefers-contrast: more) {
   .theme-toggle,
   .suggestions {
-    background: var(--color-surface);
+    background: var(--surface-3);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
@@ -1226,19 +1320,12 @@ button:focus-visible {
   input[type="number"],
   input[type="date"],
   select {
-    border-color: var(--color-text);
+    border-color: var(--text);
   }
 
   input:focus-visible,
   select:focus-visible,
   button:focus-visible {
-    box-shadow: 0 0 0 3px var(--color-accent);
+    box-shadow: 0 0 0 3px var(--accent);
   }
-}
-
-.breakdown {
-  margin: 0.25rem 0 0;
-  font-size: 0.9375rem;
-  color: var(--color-muted);
-  text-align: center;
 }
