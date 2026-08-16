@@ -49,15 +49,22 @@ export function computeResult({
   priceAtEnd,
   fxToUSDAtStart,
   fxFromUSDAtEnd,
+  dividendMultiplier = 1,
 }) {
   const investedUSD = amount * fxToUSDAtStart;
-  const shares = investedUSD / priceAtStart;
-  const finalValueUSD = shares * priceAtEnd;
+  const shares = investedUSD / priceAtStart;          // initial shares
+  const finalShares = shares * dividendMultiplier;    // after DRIP
+  const finalValueUSD = finalShares * priceAtEnd;
   const finalValue = finalValueUSD * fxFromUSDAtEnd;
+  const priceComponent = shares * priceAtEnd * fxFromUSDAtEnd; // price growth alone
+  const dividendComponent = finalValue - priceComponent;      // reinvested dividends
   const profit = finalValue - amount;
   const returnPct = (finalValue / amount - 1) * 100;
   const multiple = finalValue / amount;
-  return { investedUSD, shares, finalValueUSD, finalValue, profit, returnPct, multiple };
+  return {
+    investedUSD, shares, finalShares, finalValueUSD, finalValue,
+    priceComponent, dividendComponent, profit, returnPct, multiple,
+  };
 }
 
 export function rankResults(entries) {

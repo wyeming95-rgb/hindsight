@@ -194,3 +194,27 @@ test("simulateDrip: nonpositive-close guard — zero close skips dividend reinve
   assert.equal(r.multiplierAtEnd, 1);
   assert.deepEqual(r.path, [1, 1, 1]);
 });
+
+test("computeResult: dividendMultiplier splits into price and dividend components", () => {
+  const r = computeResult({
+    amount: 1000, priceAtStart: 10, priceAtEnd: 20,
+    fxToUSDAtStart: 1, fxFromUSDAtEnd: 1, dividendMultiplier: 1.2,
+  });
+  assert.equal(r.finalShares, 120);           // 100 initial * 1.2
+  assert.equal(r.finalValue, 2400);           // 120 * 20
+  assert.equal(r.priceComponent, 2000);       // 100 * 20
+  assert.equal(r.dividendComponent, 400);     // 2400 - 2000
+  assert.equal(r.priceComponent + r.dividendComponent, r.finalValue); // invariant
+  assert.equal(r.multiple, 2.4);
+  assert.equal(r.returnPct, 140);
+});
+
+test("computeResult: default multiplier reproduces price-only result", () => {
+  const r = computeResult({
+    amount: 1000, priceAtStart: 10, priceAtEnd: 50,
+    fxToUSDAtStart: 1, fxFromUSDAtEnd: 1,
+  });
+  assert.equal(r.finalValue, 5000);
+  assert.equal(r.dividendComponent, 0);
+  assert.equal(r.finalShares, r.shares);
+});
