@@ -50,6 +50,19 @@ export async function fetchPriceSeries(symbol) {
   return { points };
 }
 
+// Historical cash dividends for a symbol (ex-date + per-share amount),
+// ascending by date. Returns [] when the symbol has never paid a dividend.
+export async function fetchDividends(symbol) {
+  const url = `${TD_BASE}/dividends?symbol=${encodeURIComponent(symbol)}` +
+    `&range=full&apikey=${apiKey()}`;
+  const data = await getJSON(url);
+  const rows = data.dividends || [];
+  return rows
+    .map((d) => ({ exDate: d.ex_date, amount: parseFloat(d.amount) }))
+    .filter((d) => d.exDate && Number.isFinite(d.amount))
+    .sort((a, b) => (a.exDate < b.exDate ? -1 : a.exDate > b.exDate ? 1 : 0));
+}
+
 // USD per 1 unit of `currency` on `date` (YYYY-MM-DD).
 export async function fetchFxToUSD(currency, date) {
   if (currency === "USD") return 1;

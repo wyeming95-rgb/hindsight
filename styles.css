@@ -1235,3 +1235,10 @@ button:focus-visible {
     box-shadow: 0 0 0 3px var(--color-accent);
   }
 }
+
+.breakdown {
+  margin: 0.25rem 0 0;
+  font-size: 0.9375rem;
+  color: var(--color-muted);
+  text-align: center;
+}

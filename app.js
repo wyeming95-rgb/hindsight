@@ -1,7 +1,9 @@
-import { computeResult, computeRegret, rankResults, CURRENCIES, formatMoney, formatMultiple, formatPct } from "./calc.js";
+import { computeResult, computeRegret, rankResults, simulateDrip, withholdingRateFor, CURRENCIES, formatMoney, formatMultiple, formatPct } from "./calc.js";
 import {
   searchSymbols,
   fetchAllSeries,
+  fetchDividends,
+  mapSequential,
   fetchFxToUSD,
   fetchFxFromUSD,
   RateLimitError,
@@ -24,6 +26,7 @@ const currencySelect = document.getElementById("currency-select");
 const dateInput = document.getElementById("date-input");
 const resultEl = document.getElementById("result");
 const headlineEl = document.getElementById("headline");
+const breakdownEl = document.getElementById("breakdown");
 const profitEl = document.getElementById("profit");
 const returnPctEl = document.getElementById("return-pct");
 const multipleEl = document.getElementById("multiple");
@@ -592,16 +595,21 @@ function computeEffectiveStart(points, requestedDate) {
 // close. This guarantees every chart series is the same length as the
 // primary's and that index i is the same date across all series — required
 // because chart.js aligns multi-line series by index, not by date.
-function buildAlignedValues(dates, points, shares, fxFromUSDAtEnd) {
+function buildAlignedValues(dates, points, sharesAtStart, fxFromUSDAtEnd, path) {
   const out = [];
   let idx = 0;
   let lastClose = points.length > 0 ? points[0].close : null;
+  let lastMult = path && path.length > 0 ? path[0] : 1;
   for (const d of dates) {
     while (idx < points.length && points[idx].date <= d) {
       lastClose = points[idx].close;
+      lastMult = path ? path[idx] : 1;
       idx++;
     }
-    out.push({ date: d, value: lastClose == null ? 0 : shares * lastClose * fxFromUSDAtEnd });
+    out.push({
+      date: d,
+      value: lastClose == null ? 0 : sharesAtStart * lastMult * lastClose * fxFromUSDAtEnd,
+    });
   }
   return out;
 }
@@ -706,6 +714,8 @@ async function handleCalculate() {
   hideEl(noticeEl);
   hideEl(verdictEl);
   hideEl(regretEl);
+  hideEl(breakdownEl);
+  breakdownEl.textContent = "";
   hideEl(shareBarEl);
   errorEl.textContent = "";
   noticeEl.innerHTML = "";
@@ -753,7 +763,6 @@ async function handleCalculate() {
 
     const startDate = primarySnap.startPoint.date;
     const endDate = primarySnap.endPoint.date;
-    const priceAtStart = primarySnap.startPoint.close;
     const priceAtEnd = primarySnap.endPoint.close;
 
     // FX fetched exactly once (regardless of how many tickers are being
@@ -763,37 +772,64 @@ async function handleCalculate() {
       fetchFxFromUSD(currency, endDate),
     ]);
 
-    const primaryResult = computeResult({ amount, priceAtStart, priceAtEnd, fxToUSDAtStart, fxFromUSDAtEnd });
+    const withholdingRate = withholdingRateFor(currency);
 
-    const resultsBySymbol = new Map([[symbol, primaryResult]]);
-    const successfulSymbols = [symbol];
-    const compareErrors = [];
+    // Symbols that actually have price data (primary guaranteed; compares maybe).
+    const symbolsWithData = symbols.filter((sym) => {
+      const e = bySymbol.get(sym);
+      return e && !e.error && e.points && e.points.length > 0;
+    });
 
-    // Process every other resolved symbol: apply the same date-snap logic
-    // against ITS OWN points, then compute its result with the shared FX.
-    for (const sym of symbols) {
-      if (sym === symbol) continue;
-
-      const entry = bySymbol.get(sym);
-      if (!entry || entry.error || !entry.points || entry.points.length === 0) {
-        compareErrors.push(`Couldn't load ${sym} — skipped.`);
-        continue;
+    // One dividends call per symbol, sequentially spaced like the price calls.
+    // A dividends failure is non-fatal: that symbol falls back to price-only ([]).
+    const dividendsBySymbol = new Map();
+    await mapSequential(symbolsWithData, async (sym) => {
+      try {
+        dividendsBySymbol.set(sym, await fetchDividends(sym));
+      } catch {
+        dividendsBySymbol.set(sym, []);
       }
+    }, 250);
 
-      const snap = computeEffectiveStart(entry.points, requestedDate);
-      if (!snap.startPoint) {
-        compareErrors.push(`Couldn't load ${sym} — skipped.`);
-        continue;
-      }
+    // Per-symbol DRIP path (parallel to that symbol's points), for the chart.
+    const pathBySymbol = new Map();
 
-      const result = computeResult({
+    function resultFor(sym, snap) {
+      const points = bySymbol.get(sym).points;
+      const dividends = dividendsBySymbol.get(sym) || [];
+      const { multiplierAtEnd, path } = simulateDrip(
+        points, dividends, snap.startPoint.date, withholdingRate,
+      );
+      pathBySymbol.set(sym, path);
+      return computeResult({
         amount,
         priceAtStart: snap.startPoint.close,
         priceAtEnd: snap.endPoint.close,
         fxToUSDAtStart,
         fxFromUSDAtEnd,
+        dividendMultiplier: multiplierAtEnd,
       });
-      resultsBySymbol.set(sym, result);
+    }
+
+    const primaryResult = resultFor(symbol, primarySnap);
+
+    const resultsBySymbol = new Map([[symbol, primaryResult]]);
+    const successfulSymbols = [symbol];
+    const compareErrors = [];
+
+    for (const sym of symbols) {
+      if (sym === symbol) continue;
+      const entry = bySymbol.get(sym);
+      if (!entry || entry.error || !entry.points || entry.points.length === 0) {
+        compareErrors.push(`Couldn't load ${sym} — skipped.`);
+        continue;
+      }
+      const snap = computeEffectiveStart(entry.points, requestedDate);
+      if (!snap.startPoint) {
+        compareErrors.push(`Couldn't load ${sym} — skipped.`);
+        continue;
+      }
+      resultsBySymbol.set(sym, resultFor(sym, snap));
       successfulSymbols.push(sym);
     }
 
@@ -815,6 +851,20 @@ async function handleCalculate() {
       `would be worth ${formatMoney(primaryResult.finalValue, currency)} on ${endDate} ` +
       `(${formatPct(primaryResult.returnPct)}, ${formatMultiple(primaryResult.multiple)}).`;
 
+    // Breakdown line: shown only when reinvested dividends move the number.
+    const zero = formatMoney(0, currency);
+    if (formatMoney(primaryResult.dividendComponent, currency) !== zero) {
+      const note = withholdingRate > 0
+        ? ` (after ${Math.round(withholdingRate * 100)}% US withholding)`
+        : "";
+      breakdownEl.textContent =
+        `Price growth ${formatMoney(primaryResult.priceComponent, currency)} · ` +
+        `Dividends reinvested${note} added ${formatMoney(primaryResult.dividendComponent, currency)}.`;
+      showEl(breakdownEl);
+    } else {
+      hideEl(breakdownEl);
+    }
+
     // ---- multi-line chart, date-aligned to the primary's axis ----
     const primaryDates = primaryPoints.filter((p) => p.date >= startDate).map((p) => p.date);
 
@@ -822,7 +872,7 @@ async function handleCalculate() {
     const seriesList = successfulSymbols.map((sym) => {
       const points = bySymbol.get(sym).points;
       const result = resultsBySymbol.get(sym);
-      const values = buildAlignedValues(primaryDates, points, result.shares, fxFromUSDAtEnd);
+      const values = buildAlignedValues(primaryDates, points, result.shares, fxFromUSDAtEnd, pathBySymbol.get(sym));
 
       let color;
       if (sym === symbol) color = PRIMARY_COLOR;
@@ -853,6 +903,8 @@ async function handleCalculate() {
       fxFromUSDAtEnd,
       priceAtEnd,
       actualFinalValue: primaryResult.finalValue,
+      dividends: dividendsBySymbol.get(symbol) || [],
+      withholdingRate,
     });
 
     if (!regret.available) {

@@ -12,9 +12,13 @@ It is responsive and adapts to light or dark via `prefers-color-scheme`.
 ## How it works
 
 - **Prices** come from [Twelve Data](https://twelvedata.com) (`time_series`,
-  daily closes). The math is a simple lump-sum, price-only model: your amount
-  buys whole-and-fractional shares at the start-date close and is valued at the
-  latest close. Dividends, fees, and taxes are not modeled.
+  daily closes). The math is a simple lump-sum, total-return model: your amount
+  buys whole-and-fractional shares at the start-date close, and dividends are
+  reinvested at their ex-date close, net of a per-currency US withholding rate
+  (0% for USD; e.g. 15%–30% for major others). Fees and non-dividend taxes are
+  not modeled. Dividend data requires the provider's dividends endpoint and is
+  unavailable on some free-tier responses; the app falls back to price return
+  when so.
 - **Currency conversion** uses historical FX at both the start and end dates,
   pivoting through USD. Twelve Data FX is tried first; if unavailable it falls
   back to [Frankfurter](https://frankfurter.app) (no key required), which also
@@ -161,5 +165,5 @@ comparison instead of once per ticker.
 
 This tool is for **historical and educational purposes only**. It is not
 financial advice. Past performance does not guarantee future results, and the
-model ignores dividends, fees, taxes, and slippage. Do not make investment
-decisions based on it.
+model ignores fees and slippage, and models dividends via a simplified
+reinvestment assumption. Do not make investment decisions based on it.
