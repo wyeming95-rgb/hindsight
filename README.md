@@ -111,11 +111,13 @@ published.
 
 ## How to deploy
 
-Deploy to Cloudflare Pages (the functions in `functions/` deploy automatically
-alongside the static files):
+`wrangler.toml` pins the project name (`stock-history`), the build output
+directory (`public`), and the compatibility date, so deploy commands need no
+flags. Deploy to Cloudflare Pages (the functions in `functions/` deploy
+automatically alongside the static files):
 
 ```sh
-npm run deploy       # wrangler pages deploy public
+npm run deploy       # wrangler pages deploy
 ```
 
 Or connect the repo in the Cloudflare Pages dashboard with **no build command**
