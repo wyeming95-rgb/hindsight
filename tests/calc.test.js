@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { computeResult, CURRENCIES, formatMoney, formatMultiple, formatPct, rankResults, computeRegret, subtractMonths, withholdingRateFor, simulateDrip } from "../calc.js";
+import { computeResult, CURRENCIES, formatMoney, formatMultiple, formatPct, rankResults, computeRegret, subtractMonths, withholdingRateFor, simulateDrip } from "../public/calc.js";
 
 test("computeResult: basic gain with 1:1 FX", () => {
   const r = computeResult({

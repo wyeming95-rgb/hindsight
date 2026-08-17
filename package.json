@@ -5,8 +5,8 @@
   "private": true,
   "scripts": {
     "test": "node --test",
-    "dev": "wrangler pages dev .",
-    "deploy": "wrangler pages deploy ."
+    "dev": "wrangler pages dev public",
+    "deploy": "wrangler pages deploy public"
   },
   "devDependencies": {
     "wrangler": "^3.0.0"

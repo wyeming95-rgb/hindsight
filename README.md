@@ -85,6 +85,12 @@ a Cloudflare Pages Function (`functions/api/td/[[path]].js`) that proxies and
 edge-caches the three endpoints the app uses. The browser only ever calls
 same-origin `/api/td/*`.
 
+**Project layout.** The browser-served static files live in **`public/`**
+(`index.html`, `styles.css`, and the ES modules). The Pages Functions live in
+**`functions/`** at the repo root. Deploys ship only `public/` as static assets,
+so nothing else in the repo (docs, tests, `.dev.vars`, `node_modules`) is
+published.
+
 1. Get a free API key at <https://twelvedata.com> (the free tier is enough).
 2. Copy the dev-vars template and add your key:
    ```sh
@@ -95,9 +101,10 @@ same-origin `/api/td/*`.
 3. Install the dev toolchain (once) and start the local server:
    ```sh
    npm install
-   npm run dev        # wrangler pages dev . — serves static files + functions
+   npm run dev        # wrangler pages dev public — serves public/ + functions/
    ```
-   Open the URL wrangler prints (default <http://localhost:8788>).
+   Open the URL wrangler prints (this repo pins <http://localhost:8790> in
+   `.claude/launch.json`; wrangler's own default is 8788).
 
 > Note: the edge cache is a no-op under local `wrangler pages dev` — caching is a
 > production behavior. The proxy still works locally, just without caching.
@@ -108,11 +115,12 @@ Deploy to Cloudflare Pages (the functions in `functions/` deploy automatically
 alongside the static files):
 
 ```sh
-npm run deploy       # wrangler pages deploy .
+npm run deploy       # wrangler pages deploy public
 ```
 
 Or connect the repo in the Cloudflare Pages dashboard with **no build command**
-and the **project root** as the output directory.
+and **`public`** as the build output directory. (The `functions/` directory at
+the repo root is picked up automatically.)
 
 Set the key **once** as an encrypted secret (never as a committed file):
 

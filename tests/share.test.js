@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { encodeState, decodeState, buildShareUrl } from "../share.js";
+import { encodeState, decodeState, buildShareUrl } from "../public/share.js";
 
 const state = { stock: "AAPL", amount: 1000, currency: "MYR", date: "2015-08-14", benchmark: true, compare: ["TSLA", "NVDA"] };
 

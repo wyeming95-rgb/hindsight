@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mapSequential } from "../api.js";
+import { mapSequential } from "../public/api.js";
 
 test("mapSequential runs in order, never concurrently, preserves results", async () => {
   let active = 0;
