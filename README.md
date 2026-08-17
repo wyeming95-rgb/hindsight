@@ -1,4 +1,6 @@
-# What If I'd Invested
+# Hindsight
+
+*What that missed trade would be worth today.*
 
 A historical stock investment calculator. Pick a ticker, an amount, a currency
 (including MYR), and a date in the past — it shows what that lump sum would be
@@ -101,7 +103,7 @@ published.
 3. Install the dev toolchain (once) and start the local server:
    ```sh
    npm install
-   npm run dev        # wrangler pages dev public — serves public/ + functions/
+   npm run dev        # wrangler pages dev — serves public/ + functions/
    ```
    Open the URL wrangler prints (this repo pins <http://localhost:8790> in
    `.claude/launch.json`; wrangler's own default is 8788).
@@ -111,7 +113,7 @@ published.
 
 ## How to deploy
 
-`wrangler.toml` pins the project name (`stock-history`), the build output
+`wrangler.toml` pins the project name (`hindsight`), the build output
 directory (`public`), and the compatibility date, so deploy commands need no
 flags. Deploy to Cloudflare Pages (the functions in `functions/` deploy
 automatically alongside the static files):
