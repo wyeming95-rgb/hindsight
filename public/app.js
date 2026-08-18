@@ -708,6 +708,9 @@ async function handleCalculate() {
   breakdownEl.textContent = "";
   hideEl(shareBarEl);
   hideEl(growCtaEl);
+  hideEl(waitlistMsgEl);
+  waitlistMsgEl.textContent = "";
+  waitlistMsgEl.classList.remove("is-ok", "is-err");
   errorEl.textContent = "";
   noticeEl.innerHTML = "";
   verdictEl.textContent = "";
