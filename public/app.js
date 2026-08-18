@@ -12,6 +12,7 @@ import {
 } from "./api.js";
 import { renderChart, PRIMARY_COLOR, BENCHMARK_COLOR, LINE_COLORS } from "./chart.js?v=1";
 import { decodeState, buildShareUrl, copyLink, renderCardPng } from "./share.js";
+import { track } from "./analytics.js";
 
 // ---------------------------------------------------------------------------
 // Element references
@@ -46,6 +47,9 @@ const shareBarEl = document.getElementById("share-bar");
 const copyLinkBtn = document.getElementById("copy-link-btn");
 const downloadPngBtn = document.getElementById("download-png-btn");
 const toastEl = document.getElementById("toast");
+
+const growCtaEl = document.getElementById("grow-cta");
+const affiliateCtaEl = document.getElementById("affiliate-cta");
 
 // Maximum number of lines on the chart: 1 primary + up to 3 more
 // (benchmark and/or compare tickers), matching chart.js's exported palette
@@ -699,6 +703,7 @@ async function handleCalculate() {
   hideEl(breakdownEl);
   breakdownEl.textContent = "";
   hideEl(shareBarEl);
+  hideEl(growCtaEl);
   errorEl.textContent = "";
   noticeEl.innerHTML = "";
   verdictEl.textContent = "";
@@ -934,6 +939,8 @@ async function handleCalculate() {
       /* URL sync unavailable (e.g. file:// origin); share via Copy link still works */
     }
     showEl(shareBarEl);
+    showEl(growCtaEl);
+    track("result_view", { ticker: tickerInput.value.trim().toUpperCase() });
   } catch (err) {
     errorEl.textContent = friendlyErrorMessage(err);
     showEl(errorEl);
@@ -1003,6 +1010,10 @@ downloadPngBtn.addEventListener("click", async () => {
   if (!ok) {
     showToast("Couldn't generate the image.");
   }
+});
+
+affiliateCtaEl.addEventListener("click", () => {
+  track("affiliate_click");
 });
 
 // ---------------------------------------------------------------------------
