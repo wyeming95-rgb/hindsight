@@ -50,6 +50,10 @@ const toastEl = document.getElementById("toast");
 
 const growCtaEl = document.getElementById("grow-cta");
 const affiliateCtaEl = document.getElementById("affiliate-cta");
+const waitlistForm = document.getElementById("waitlist-form");
+const waitlistEmailEl = document.getElementById("waitlist-email");
+const waitlistMsgEl = document.getElementById("waitlist-msg");
+const waitlistSubmitEl = document.getElementById("waitlist-submit");
 
 // Maximum number of lines on the chart: 1 primary + up to 3 more
 // (benchmark and/or compare tickers), matching chart.js's exported palette
@@ -1015,6 +1019,41 @@ downloadPngBtn.addEventListener("click", async () => {
 affiliateCtaEl.addEventListener("click", () => {
   track("affiliate_click");
 });
+
+waitlistForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = waitlistEmailEl.value.trim();
+  // Cheap client check for instant feedback; the server is authoritative.
+  if (!/.+@.+\..+/.test(email)) {
+    showWaitlistMsg("Enter a valid email.", "is-err");
+    return;
+  }
+  waitlistSubmitEl.disabled = true;
+  try {
+    const res = await fetch("/api/waitlist", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    if (res.ok) {
+      showWaitlistMsg("You're on the list — thanks!", "is-ok");
+      waitlistEmailEl.value = "";
+      track("waitlist_submit");
+    } else {
+      showWaitlistMsg("That didn't work. Try again.", "is-err");
+    }
+  } catch {
+    showWaitlistMsg("Network problem — try again.", "is-err");
+  } finally {
+    waitlistSubmitEl.disabled = false;
+  }
+});
+
+function showWaitlistMsg(text, cls) {
+  waitlistMsgEl.textContent = text;
+  waitlistMsgEl.classList.remove("is-ok", "is-err", "hidden");
+  waitlistMsgEl.classList.add(cls);
+}
 
 // ---------------------------------------------------------------------------
 // Task 8: auto-run from a shared URL on load

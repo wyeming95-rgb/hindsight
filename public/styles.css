@@ -1356,3 +1356,23 @@ button:focus-visible {
   border-color: var(--accent);
   background: var(--accent-glow);
 }
+.waitlist-label {
+  margin: 0 0 var(--space-2);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.waitlist-row {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.waitlist-row input {
+  flex: 1 1 12rem;
+}
+.waitlist-msg {
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+.waitlist-msg.is-ok { color: var(--accent); }
+.waitlist-msg.is-err { color: var(--danger-text); }
