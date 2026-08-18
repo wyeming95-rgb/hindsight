@@ -72,7 +72,7 @@ function initCurrencySelect() {
     opt.textContent = `${c.code} — ${c.symbol}`;
     currencySelect.appendChild(opt);
   }
-  currencySelect.value = "MYR";
+  currencySelect.value = "USD";
 }
 
 function initDateMax() {
