@@ -60,13 +60,15 @@ export function openEventCard({ event, mount, compute, initialWindow = DEFAULT_W
     card.querySelector(".event-card-before").textContent = priceText(r && r.beforeClose);
     card.querySelector(".event-card-after").textContent = priceText(r && r.afterClose);
     const moveEl = card.querySelector(".event-card-move");
-    moveEl.textContent = r ? formatPct(r.stockMove) : "—";
+    moveEl.textContent = r ? formatPct(r.stockMove * 100) : "—";
     moveEl.classList.add(r && r.stockMove >= 0 ? "up" : "dn");
 
     // Market-context chip.
     const chipEl = card.querySelector(".event-card-chip");
     chipEl.textContent =
-      r && r.hasMarket ? `market did ${formatPct(r.marketMove)} over the same stretch` : "vs market unavailable";
+      r && r.hasMarket
+        ? `market did ${formatPct(r.marketMove * 100)} over the same stretch`
+        : "vs market unavailable";
 
     // Partial-data note.
     const noteSlot = card.querySelector(".event-card-note-slot");
