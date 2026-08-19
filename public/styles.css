@@ -1376,3 +1376,17 @@ button:focus-visible {
 }
 .waitlist-msg.is-ok { color: var(--accent); }
 .waitlist-msg.is-err { color: var(--danger-text); }
+
+/* ==========================================================================
+   Event overlay — colored dots on chart
+   ========================================================================== */
+.event-dot { cursor: pointer; stroke: #0d1117; stroke-width: 1.5; transition: r 0.12s ease; }
+.event-dot:hover, .event-dot:focus { r: 6; outline: none; }
+.event-dot-beat { fill: #34d399; }
+.event-dot-lag  { fill: #ff6b6b; }
+.event-dot-flat { fill: #8b98ac; }
+/* BYO events read as user annotations: hollow ring */
+.event-dot-byo { fill: #0d1117; stroke-width: 2; }
+.event-dot-byo.event-dot-beat { stroke: #34d399; }
+.event-dot-byo.event-dot-lag  { stroke: #ff6b6b; }
+.event-dot-byo.event-dot-flat { stroke: #8b98ac; }
