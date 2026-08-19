@@ -1,0 +1,10 @@
+{
+  "symbol": "META",
+  "events": [
+    { "date": "2018-07-25", "headline": "Q2 miss + slowing growth — biggest single-day market-cap loss ever", "category": "earnings" },
+    { "date": "2021-10-28", "headline": "Rebrands to 'Meta' — 'the metaverse pivot is a distraction'", "category": "other" },
+    { "date": "2022-02-02", "headline": "First-ever DAU decline — stock craters 26% in a day", "category": "earnings" },
+    { "date": "2022-10-26", "headline": "Reality Labs losses balloon — stock hits multi-year low", "category": "earnings" },
+    { "date": "2023-02-01", "headline": "'Year of Efficiency' memo — stock rockets on cost-cutting pivot", "category": "other" }
+  ]
+}

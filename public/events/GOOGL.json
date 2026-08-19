@@ -1,0 +1,10 @@
+{
+  "symbol": "GOOGL",
+  "events": [
+    { "date": "2022-07-15", "headline": "20-for-1 stock split takes effect — 'a paper gain, nothing more'", "category": "other" },
+    { "date": "2023-02-02", "headline": "Misses on ad revenue, YouTube down 8% — but stock rises anyway", "category": "earnings" },
+    { "date": "2023-02-08", "headline": "Bard AI demo error wipes $100B off market cap in a day", "category": "product" },
+    { "date": "2023-12-06", "headline": "Unveils Gemini AI — hyped demo video later admitted to be staged", "category": "product" },
+    { "date": "2024-08-05", "headline": "Judge rules Google an illegal monopoly in search", "category": "macro" }
+  ]
+}

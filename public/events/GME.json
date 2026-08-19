@@ -1,0 +1,10 @@
+{
+  "symbol": "GME",
+  "events": [
+    { "date": "2021-01-13", "headline": "Stock surges nearly 50% as WallStreetBets piles into heavy short interest", "category": "other" },
+    { "date": "2021-01-19", "headline": "Citron's Andrew Left predicts GME crashes to $20 — hits $483 in 9 days", "category": "analyst" },
+    { "date": "2021-01-28", "headline": "Robinhood restricts buying at the squeeze's peak — 'the game is rigged'", "category": "other" },
+    { "date": "2021-04-08", "headline": "Ryan Cohen named board chairman — 'turnaround' thesis takes hold", "category": "other" },
+    { "date": "2023-03-22", "headline": "First profitable quarter in two years — stock jumps on cost cuts", "category": "earnings" }
+  ]
+}

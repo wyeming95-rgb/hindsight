@@ -1,0 +1,10 @@
+{
+  "symbol": "TSLA",
+  "events": [
+    { "date": "2018-08-07", "headline": "Musk tweets 'funding secured' to take Tesla private at $420", "category": "other" },
+    { "date": "2019-01-30", "headline": "Second straight profitable quarter — bears call it a fluke", "category": "earnings" },
+    { "date": "2020-12-21", "headline": "Tesla joins the S&P 500 — 'passive money must pile in'", "category": "macro" },
+    { "date": "2023-01-03", "headline": "Shares plunge 12% on delivery miss — 'demand is broken'", "category": "earnings" },
+    { "date": "2023-01-12", "headline": "Slashes US prices up to 20% — 'proof of weak demand'", "category": "product" }
+  ]
+}
