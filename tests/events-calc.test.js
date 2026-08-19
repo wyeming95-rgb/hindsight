@@ -62,6 +62,10 @@ test("eventDateToChartIndex maps to nearest prior", () => {
 
 test("validateEvent enforces date + headline", () => {
   assert.equal(validateEvent({ date: "2024-02-02", headline: "x" }).ok, true);
+  assert.deepEqual(
+    validateEvent({ date: "2024-02-02", headline: "x" }).event,
+    { date: "2024-02-02", headline: "x", category: "other", sourceUrl: "" },
+  );
   assert.equal(validateEvent({ date: "nope", headline: "x" }).ok, false);
   assert.equal(validateEvent({ date: "2024-02-02", headline: "" }).ok, false);
   assert.equal(DEFAULT_WINDOW, "1M");
