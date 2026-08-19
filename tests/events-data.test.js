@@ -37,6 +37,12 @@ test("decodeByoEvents drops malformed entries", () => {
   assert.equal(decodeByoEvents("notadate~x;2024-02-02~ok").length, 1);
 });
 
+test("decodeByoEvents skips malformed percent-encoding, keeps valid", () => {
+  const out = decodeByoEvents("2024-02-02~%;2020-03-16~COVID%20crash");
+  assert.equal(out.length, 1);
+  assert.equal(out[0].date, "2020-03-16");
+});
+
 test("mergeEvents sorts ascending by date", () => {
   const merged = mergeEvents(
     [{ date: "2024-05-01", headline: "a", source: "curated" }],

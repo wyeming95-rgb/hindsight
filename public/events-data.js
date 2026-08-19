@@ -24,12 +24,17 @@ export function decodeByoEvents(str) {
   const out = [];
   for (const part of String(str).split(";")) {
     if (!part) continue;
-    const [d, h] = part.split("~", 2);
-    const v = validateEvent({
-      date: decodeURIComponent(d || ""),
-      headline: decodeURIComponent(h || ""),
-    });
-    if (v.ok) out.push({ ...v.event, source: "byo" });
+    try {
+      const [d, h] = part.split("~", 2);
+      const v = validateEvent({
+        date: decodeURIComponent(d || ""),
+        headline: decodeURIComponent(h || ""),
+      });
+      if (v.ok) out.push({ ...v.event, source: "byo" });
+    } catch {
+      // Skip entries with malformed percent-encoding
+      continue;
+    }
   }
   return out;
 }
