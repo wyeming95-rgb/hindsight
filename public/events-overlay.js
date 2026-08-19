@@ -17,15 +17,9 @@ export function drawEventDots(svg, events, primaryPlotted, onEventClick) {
     dot.setAttribute("cy", String(p.y));
     dot.setAttribute("r", "4.5");
     dot.setAttribute("class", `event-dot event-dot-${ev.colorClass} event-dot-${ev.source}`);
-    dot.setAttribute("tabindex", "0");
-    dot.setAttribute("role", "button");
-    dot.setAttribute("aria-label", `News ${ev.date}: ${ev.headline}`);
 
     const fire = (e) => { e.stopPropagation(); onEventClick(ev); };
     dot.addEventListener("click", fire);
-    dot.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") fire(e);
-    });
 
     svg.appendChild(dot);
     drawn++;

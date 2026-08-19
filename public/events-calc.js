@@ -20,8 +20,8 @@ function moveOverWindow(series, anchorIdx, steps) {
   return { before, after, move, partial: anchorIdx + steps > lastIdx };
 }
 
-export function abnormalReturn(stockSeries, benchSeries, isoDate, window) {
-  const steps = WINDOW_TRADING_DAYS[window] ?? WINDOW_TRADING_DAYS[DEFAULT_WINDOW];
+export function abnormalReturn(stockSeries, benchSeries, isoDate, win) {
+  const steps = WINDOW_TRADING_DAYS[win] ?? WINDOW_TRADING_DAYS[DEFAULT_WINDOW];
   const anchorIdx = resolveAnchorIndex(stockSeries, isoDate);
   if (anchorIdx < 0) return null;
 

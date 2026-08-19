@@ -1128,6 +1128,11 @@ function wireByoForm() {
     if (!symbol || !date || !label) return; // nothing to add yet / no calc run
 
     const events = loadByo(symbol);
+    const isDuplicate = events.some((e) => `${e.date}|${e.headline}` === `${date}|${label}`);
+    if (isDuplicate) {
+      labelEl.value = "";
+      return;
+    }
     events.push({ date, headline: label });
     // Validation + persistence happens in events-data.js; invalid entries
     // are silently dropped on the next load rather than throwing here.
