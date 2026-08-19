@@ -1,0 +1,10 @@
+{
+  "symbol": "NFLX",
+  "events": [
+    { "date": "2020-04-21", "headline": "15.8M new subscribers on lockdown demand — 'unstoppable' narrative peaks", "category": "earnings" },
+    { "date": "2022-01-20", "headline": "Guides for weak Q1 subscriber growth — stock plunges 22%", "category": "earnings" },
+    { "date": "2022-04-19", "headline": "First subscriber loss in a decade — stock craters 35%", "category": "earnings" },
+    { "date": "2022-11-03", "headline": "Launches ad-supported tier — 'subscribers will hate ads'", "category": "product" },
+    { "date": "2023-05-23", "headline": "Password-sharing crackdown hits US — 'subscribers will revolt'", "category": "other" }
+  ]
+}

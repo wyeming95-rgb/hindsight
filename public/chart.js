@@ -1,4 +1,5 @@
 import { formatMoney } from "./calc.js";
+import { drawEventDots } from "./events-overlay.js";
 
 // ---------------------------------------------------------------------------
 // Interactive SVG line chart for the investment growth series.
@@ -116,8 +117,9 @@ function buildLegend(seriesList) {
  *
  * @param {Array<{label: string, color: string, points: Array<{date: string, value: number}>}>} seriesList
  * @param {string} currencyCode
+ * @param {Object} opts
  */
-export function renderChart(seriesList, currencyCode) {
+export function renderChart(seriesList, currencyCode, opts = {}) {
   const container = document.getElementById("chart");
   if (!container) return;
 
@@ -140,7 +142,7 @@ export function renderChart(seriesList, currencyCode) {
     return;
   }
 
-  renderLineChart(container, validSeries, currencyCode);
+  renderLineChart(container, validSeries, currencyCode, opts);
 }
 
 function renderSinglePoint(container, seriesList, currencyCode) {
@@ -190,7 +192,7 @@ function renderSinglePoint(container, seriesList, currencyCode) {
   container.appendChild(tooltip);
 }
 
-function renderLineChart(container, seriesList, currencyCode) {
+function renderLineChart(container, seriesList, currencyCode, opts) {
   // The primary (first) series defines the X domain — index position and
   // dates. Other series are plotted along that same domain, up to however
   // many points they each have.
@@ -289,6 +291,10 @@ function renderLineChart(container, seriesList, currencyCode) {
 
   for (const path of paths) {
     animateDrawIn(path);
+  }
+
+  if (opts && opts.events && opts.events.length) {
+    drawEventDots(svg, opts.events, seriesPoints[0], opts.onEventClick || (() => {}));
   }
 
   function nearestIndexForClientX(clientX) {

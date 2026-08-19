@@ -1,0 +1,10 @@
+{
+  "symbol": "AMD",
+  "events": [
+    { "date": "2022-02-14", "headline": "Closes $49B Xilinx acquisition — largest chip deal in history", "category": "other" },
+    { "date": "2022-08-02", "headline": "Cuts guidance on PC slump — 'the growth story stalls'", "category": "earnings" },
+    { "date": "2022-10-06", "headline": "Preliminary Q3 revenue slashed to $5.6B — stock craters on inventory glut", "category": "earnings" },
+    { "date": "2023-12-06", "headline": "Launches MI300 AI accelerators — bids to challenge Nvidia", "category": "product" },
+    { "date": "2024-07-30", "headline": "MI300X sales top $1B — data center revenue surges 115%", "category": "earnings" }
+  ]
+}

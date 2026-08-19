@@ -1,0 +1,10 @@
+{
+  "symbol": "AMZN",
+  "events": [
+    { "date": "2017-06-16", "headline": "Buys Whole Foods for $13.7B — grocery stocks crater on the threat", "category": "macro" },
+    { "date": "2019-02-01", "headline": "Q4 beats estimates, but heavy 2019 spending guidance spooks investors", "category": "earnings" },
+    { "date": "2020-03-23", "headline": "COVID crash bottom — 'nobody will shop online forever'", "category": "macro" },
+    { "date": "2022-04-28", "headline": "AWS growth slows — 'the cloud cash cow is aging'", "category": "earnings" },
+    { "date": "2022-06-03", "headline": "20-for-1 stock split takes effect — 'a paper gain, nothing more'", "category": "other" }
+  ]
+}

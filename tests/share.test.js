@@ -29,3 +29,19 @@ test("buildShareUrl composes base + query", () => {
   assert.ok(url.startsWith("https://example.com/app?"));
   assert.equal(decodeState(url.split("?")[1]).stock, "AAPL");
 });
+
+test("share round-trips byoEvents under ev param", () => {
+  const s = {
+    stock: "AAPL", amount: 1000, currency: "USD", date: "2020-01-02",
+    benchmark: false, compare: [],
+    byoEvents: [{ date: "2020-03-16", headline: "COVID crash" }],
+  };
+  const decoded = decodeState(encodeState(s));
+  assert.equal(decoded.byoEvents.length, 1);
+  assert.equal(decoded.byoEvents[0].date, "2020-03-16");
+  assert.equal(decoded.byoEvents[0].headline, "COVID crash");
+});
+
+test("decodeState defaults byoEvents to empty array", () => {
+  assert.deepEqual(decodeState("stock=MSFT").byoEvents, []);
+});

@@ -13,6 +13,9 @@ import {
 import { renderChart, PRIMARY_COLOR, BENCHMARK_COLOR, LINE_COLORS } from "./chart.js?v=1";
 import { decodeState, buildShareUrl, copyLink, renderCardPng } from "./share.js";
 import { track } from "./analytics.js";
+import { loadCurated, loadByo, saveByo, mergeEvents } from "./events-data.js";
+import { abnormalReturn, dotClass, DEFAULT_WINDOW } from "./events-calc.js";
+import { openEventCard, closeEventCard } from "./event-card.js";
 
 // ---------------------------------------------------------------------------
 // Element references
@@ -48,6 +51,8 @@ const copyLinkBtn = document.getElementById("copy-link-btn");
 const downloadPngBtn = document.getElementById("download-png-btn");
 const toastEl = document.getElementById("toast");
 
+const eventsToggle = document.getElementById("events-toggle");
+
 const growCtaEl = document.getElementById("grow-cta");
 const affiliateCtaEl = document.getElementById("affiliate-cta");
 const waitlistForm = document.getElementById("waitlist-form");
@@ -67,6 +72,14 @@ let selectedSymbol = "";
 // used by the "Download image" button (Task 8). Null until a calc succeeds.
 let lastCardData = null;
 let lastPngFilename = "what-if.png";
+
+// News event overlay (Task 8): SPY raw points cached across calculations so
+// the abnormal-return math doesn't refetch when the benchmark toggle is off,
+// and a snapshot of the last render's inputs so the "Show news events"
+// toggle and the BYO add-form can redraw the chart without re-running the
+// whole calculation.
+let spyForEventsCache = null;
+let lastRender = null;
 
 // ---------------------------------------------------------------------------
 // Step 1: currency dropdown + date max
@@ -450,6 +463,9 @@ export function getCompareState() {
     date: dateInput.value,
     benchmark,
     compare,
+    // Carries this ticker's BYO events (localStorage + any already in the
+    // URL) into the share link, so sharing round-trips them (Task 8).
+    byoEvents: primary ? mergeByoSources(primary) : [],
   };
 }
 
@@ -507,6 +523,33 @@ function showToast(message) {
     toastEl.classList.add("hidden");
     toastTimer = null;
   }, 2500);
+}
+
+// ---------------------------------------------------------------------------
+// Task 8: news event overlay helpers
+// ---------------------------------------------------------------------------
+
+// Abnormal-return math always needs SPY closes, even when the user hasn't
+// checked the benchmark-compare toggle. Reuse the already-fetched SPY series
+// when it's part of this calculation's symbol list; otherwise fetch it once
+// and cache it for subsequent calculations in this session.
+async function getSpySeriesForEvents(bySymbol) {
+  if (bySymbol.has("SPY") && bySymbol.get("SPY").points) return bySymbol.get("SPY").points;
+  if (spyForEventsCache) return spyForEventsCache;
+  const [res] = await fetchAllSeries(["SPY"]);
+  spyForEventsCache = res && res.points ? res.points : [];
+  return spyForEventsCache;
+}
+
+// Combines this ticker's locally-stored BYO events with any carried in the
+// current page URL's `ev` param (e.g. from a shared link), deduping so an
+// event already saved to localStorage isn't duplicated on the chart.
+function mergeByoSources(symbol) {
+  const stored = loadByo(symbol);
+  const fromUrl = decodeState(location.search).byoEvents || [];
+  const seen = new Set(stored.map((e) => `${e.date}|${e.headline}`));
+  const extra = fromUrl.filter((e) => !seen.has(`${e.date}|${e.headline}`));
+  return [...stored, ...extra];
 }
 
 // ---------------------------------------------------------------------------
@@ -881,7 +924,40 @@ async function handleCalculate() {
 
       return { label: sym, color, points: values };
     });
-    renderChart(seriesList, currency);
+
+    // ---- news event overlay (Task 8) ----
+    closeEventCard();
+    const stockRaw = primaryPoints;
+    const spyRaw = await getSpySeriesForEvents(bySymbol);
+    const curated = (await loadCurated(symbol)).events;
+    const byo = mergeByoSources(symbol); // localStorage + URL `ev` param
+    const merged = mergeEvents(curated, byo);
+
+    const enriched = merged
+      .map((ev) => {
+        const r = abnormalReturn(stockRaw, spyRaw, ev.date, DEFAULT_WINDOW);
+        if (!r) return null; // event predates this series' price history
+        return { ...ev, colorClass: dotClass(r.abnormal) };
+      })
+      .filter(Boolean);
+
+    const onEventClick = (ev) => {
+      track("event_marker_view", { ticker: symbol, date: ev.date, source: ev.source });
+      openEventCard({
+        event: ev,
+        mount: document.getElementById("chart"),
+        compute: (w) => abnormalReturn(stockRaw, spyRaw, ev.date, w),
+      });
+    };
+
+    renderChart(seriesList, currency, {
+      events: eventsToggle.checked ? enriched : [],
+      onEventClick,
+    });
+
+    // Snapshot so the "Show news events" toggle and the BYO add-form can
+    // redraw the chart without re-running the whole calculation.
+    lastRender = { symbol, seriesList, currency, enriched, onEventClick };
 
     // ---- ranked results + verdict ----
     const entries = successfulSymbols.map((sym) => ({ symbol: sym, result: resultsBySymbol.get(sym) }));
@@ -1022,6 +1098,63 @@ downloadPngBtn.addEventListener("click", async () => {
 affiliateCtaEl.addEventListener("click", () => {
   track("affiliate_click");
 });
+
+// ---------------------------------------------------------------------------
+// Task 8: news event overlay — "Show news events" toggle + BYO add-form
+// ---------------------------------------------------------------------------
+
+// Redraws the existing chart with or without the event dots, reusing the
+// last calculation's data rather than re-fetching/re-computing anything.
+// No-op until a calculation has actually rendered a chart.
+eventsToggle.addEventListener("change", () => {
+  if (!lastRender) return;
+  closeEventCard();
+  renderChart(lastRender.seriesList, lastRender.currency, {
+    events: eventsToggle.checked ? lastRender.enriched : [],
+    onEventClick: lastRender.onEventClick,
+  });
+});
+
+function wireByoForm() {
+  const dateEl = document.getElementById("byo-date");
+  const labelEl = document.getElementById("byo-label");
+  const addBtn = document.getElementById("byo-add");
+  if (!addBtn) return;
+
+  addBtn.addEventListener("click", () => {
+    const symbol = lastRender && lastRender.symbol;
+    const date = dateEl.value;
+    const label = labelEl.value.trim();
+    if (!symbol || !date || !label) return; // nothing to add yet / no calc run
+
+    const events = loadByo(symbol);
+    const isDuplicate = events.some((e) => `${e.date}|${e.headline}` === `${date}|${label}`);
+    if (isDuplicate) {
+      labelEl.value = "";
+      return;
+    }
+    events.push({ date, headline: label });
+    // Validation + persistence happens in events-data.js; invalid entries
+    // are silently dropped on the next load rather than throwing here.
+    saveByo(symbol, events);
+    track("byo_event_add", { ticker: symbol });
+    labelEl.value = "";
+    rerunLastCalculation();
+  });
+}
+
+// Re-runs the same calculation the Calculate button triggers, so a newly
+// added BYO event is fetched, enriched with its abnormal-return color, and
+// drawn on the chart. `handleCalculate` reads its inputs fresh from the form
+// each time (ticker/amount/date/compare rows), so simply invoking it again
+// picks up the just-saved BYO event via `mergeByoSources` without needing a
+// separate code path.
+function rerunLastCalculation() {
+  if (!lastRender) return;
+  handleCalculate();
+}
+
+wireByoForm();
 
 waitlistForm.addEventListener("submit", async (e) => {
   e.preventDefault();
