@@ -156,7 +156,21 @@
 
         <p id="summary" class="summary"></p>
 
+        <label class="checkbox-field" for="events-toggle">
+          <input type="checkbox" id="events-toggle" name="events" checked />
+          <span>Show news events</span>
+        </label>
+
         <div id="chart" class="chart" role="img" aria-label="Investment growth chart"></div>
+
+        <div class="field byo-form">
+          <label for="byo-label">Add your own event</label>
+          <div class="byo-form-row">
+            <input type="date" id="byo-date" aria-label="Event date" />
+            <input type="text" id="byo-label" maxlength="80" placeholder="What happened?" aria-label="Event description" />
+            <button type="button" id="byo-add" class="btn-secondary">Add event</button>
+          </div>
+        </div>
 
         <p id="verdict" class="verdict hidden"></p>
         <p id="regret" class="regret hidden"></p>
