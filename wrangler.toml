@@ -4,4 +4,4 @@ pages_build_output_dir = "public"
 
 [[kv_namespaces]]
 binding = "WAITLIST"
-id = "REPLACE_WITH_REAL_NAMESPACE_ID"
+id = "62f54dc36dbb4c52a0feda395d55d8d0"
