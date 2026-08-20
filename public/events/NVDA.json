@@ -1,0 +1,10 @@
+{
+  "symbol": "NVDA",
+  "events": [
+    { "date": "2022-11-30", "headline": "ChatGPT launches — the AI compute demand story begins", "category": "product" },
+    { "date": "2023-05-24", "headline": "Blowout guidance ($11B vs $7.2B est.) ignites the AI trade", "category": "earnings" },
+    { "date": "2023-08-23", "headline": "Data center revenue triples — 'this can't keep up' say skeptics", "category": "earnings" },
+    { "date": "2024-05-22", "headline": "10-for-1 stock split announced — 'just paper, nothing changes'", "category": "other" },
+    { "date": "2025-01-27", "headline": "DeepSeek panic erases $589B in a day — 'AI capex story is over'", "category": "macro" }
+  ]
+}

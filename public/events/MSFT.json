@@ -1,0 +1,10 @@
+{
+  "symbol": "MSFT",
+  "events": [
+    { "date": "2023-01-18", "headline": "Announces 10,000 layoffs — 'the growth story is over' fears", "category": "macro" },
+    { "date": "2023-01-23", "headline": "Announces new multibillion-dollar OpenAI investment", "category": "other" },
+    { "date": "2023-01-24", "headline": "Azure growth slows to 31% — stock erases earnings-day gains", "category": "earnings" },
+    { "date": "2023-02-07", "headline": "Unveils GPT-powered Bing — 'Google killer' hype", "category": "product" },
+    { "date": "2023-10-13", "headline": "Closes $69B Activision Blizzard deal after 21-month fight", "category": "other" }
+  ]
+}

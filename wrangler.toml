@@ -1,3 +1,7 @@
 name = "gethindsight"
 compatibility_date = "2024-11-06"
 pages_build_output_dir = "public"
+
+[[kv_namespaces]]
+binding = "WAITLIST"
+id = "62f54dc36dbb4c52a0feda395d55d8d0"

@@ -156,7 +156,21 @@
 
         <p id="summary" class="summary"></p>
 
+        <label class="checkbox-field" for="events-toggle">
+          <input type="checkbox" id="events-toggle" name="events" checked />
+          <span>Show news events</span>
+        </label>
+
         <div id="chart" class="chart" role="img" aria-label="Investment growth chart"></div>
+
+        <div class="field byo-form">
+          <label for="byo-label">Add your own event</label>
+          <div class="byo-form-row">
+            <input type="date" id="byo-date" aria-label="Event date" />
+            <input type="text" id="byo-label" maxlength="80" placeholder="What happened?" aria-label="Event description" />
+            <button type="button" id="byo-add" class="btn-secondary">Add event</button>
+          </div>
+        </div>
 
         <p id="verdict" class="verdict hidden"></p>
         <p id="regret" class="regret hidden"></p>
@@ -167,6 +181,23 @@
       <div id="share-bar" class="share-bar hidden">
         <button type="button" id="copy-link-btn" class="btn-secondary">Copy link</button>
         <button type="button" id="download-png-btn" class="btn-secondary">Download image</button>
+      </div>
+
+      <div id="grow-cta" class="grow-cta hidden">
+        <a id="affiliate-cta" class="affiliate-cta"
+           href="https://example.com/start-investing"
+           target="_blank" rel="noopener noreferrer">
+          Start investing for real <span aria-hidden="true">&rarr;</span>
+        </a>
+        <form id="waitlist-form" class="waitlist" novalidate>
+          <p class="waitlist-label">Want to save &amp; track strategies? Pro is coming.</p>
+          <div class="waitlist-row">
+            <input type="email" id="waitlist-email" name="email"
+                   placeholder="you@email.com" autocomplete="email" spellcheck="false" />
+            <button type="submit" id="waitlist-submit" class="btn-secondary">Join waitlist</button>
+          </div>
+          <p id="waitlist-msg" class="waitlist-msg hidden" role="status" aria-live="polite"></p>
+        </form>
       </div>
     </main>
 
